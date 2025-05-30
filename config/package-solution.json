@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "request-approval-system-client-side-solution",
+    "id": "f83762fc-cdde-4d43-a2ca-471307aa8b93",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.14.0"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "requestApprovalSystem description"
+      },
+      "longDescription": {
+        "default": "requestApprovalSystem description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "request-approval-system Feature",
+        "description": "The feature that activates elements of the request-approval-system solution.",
+        "id": "20056b7e-5187-4d51-aa92-44cafc72b08e",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/request-approval-system.sppkg"
+  }
+}

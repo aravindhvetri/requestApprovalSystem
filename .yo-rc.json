@@ -1,0 +1,16 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "version": "1.14.0",
+    "libraryName": "request-approval-system",
+    "libraryId": "f83762fc-cdde-4d43-a2ca-471307aa8b93",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "requestApprovalSystem",
+    "solutionShortDescription": "requestApprovalSystem description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
