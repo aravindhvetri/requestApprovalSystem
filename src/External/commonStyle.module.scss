@@ -1,0 +1,32 @@
+//Theme Colors:
+$themeColor: #4e232a;
+$liteThemeColor: #84656a;
+$white: #ffffff;
+$black: #202735;
+$blue: #3264e2;
+$green: #11a949;
+$red: #e23235;
+$liteGreyBackground: #e5e5e5;
+$commonBorderRadius: 4px;
+$fontSizebig: 14px;
+$fontSizeMedium: 12px;
+$fontSizeSmall: 10px;
+$backgroundTranspanrent: #26262685;
+//Using Styles For Normal CssFile:
+:root {
+  --themeColor: #4e232a;
+  --liteThemeColor: #84656a;
+  --white: #ffffff;
+  --black: #202735;
+  --blue: #3264e2;
+  --green: #11a949;
+  --red: #e23235;
+  --backgroundTranspanrent: #26262685;
+  --liteGreyBackground: #e5e5e5;
+  --sideBarBoxShadow: -4px 4px 10px rgba(255, 255, 255, 0.5);
+  --commonBorderRadius: 4px;
+  --fontSizebig: 16px;
+  --fontSizeMedium: 14px;
+  --fontSizeSmall: 11px;
+  --borderColor: #ebebed;
+}

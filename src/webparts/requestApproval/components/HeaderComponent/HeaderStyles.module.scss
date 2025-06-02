@@ -1,0 +1,45 @@
+@import "../../../../External/commonStyle.module.scss";
+
+.mainContainer {
+  width: 100%;
+  height: 200px;
+  .profileHeader {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: $liteGreyBackground;
+    border-radius: $commonBorderRadius;
+    height: 33%;
+    padding-left: 10px;
+    .profileTitle {
+      display: block;
+      h1 {
+        font-size: $fontSizebig;
+        color: $themeColor;
+        margin: 0;
+      }
+      label {
+        font-size: $fontSizeSmall;
+        color: $liteThemeColor;
+      }
+    }
+  }
+  .headerTitle {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 33%;
+    label {
+      font-size: 17px;
+      font-weight: 500;
+      color: $black;
+    }
+  }
+  .headerFilters {
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    width: 100%;
+    height: 33%;
+  }
+}
