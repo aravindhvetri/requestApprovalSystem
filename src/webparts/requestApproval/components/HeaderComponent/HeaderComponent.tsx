@@ -5,42 +5,87 @@ import { useEffect, useState } from "react";
 import "../../../../External/style.css";
 import HeaderStyles from "./HeaderStyles.module.scss";
 import { Persona } from "@fluentui/react";
-import { Button } from "primereact/button";
 //Child components import
 import RequestForm from "../RequestForm/RequestForm";
+import MyApproval from "../ApprovalComponent/MyApproval";
+//PrimeReact Imports:
+import { Button } from "primereact/button";
+//Common Services Imports:
+import { Config } from "../../../../CommonServices/Config";
 
 const HeaderComponent = ({ context }) => {
+  //Current User Details:
+  const currentUserEmail = context._pageContext._user.email;
+  const currentUserName = context._pageContext._user.displayName;
+  //States:
+  const [activeTab, setActiveTab] = useState(`${Config.TabNames.Request}`);
   const [openRequestForm, setOpenRequestForm] = useState(false);
-  console.log("openRequestForm", openRequestForm);
+
   return (
     <>
       <div className={HeaderStyles.mainContainer}>
         <div className={HeaderStyles.profileHeader}>
           <Persona
-            imageUrl={`/_layouts/15/userphoto.aspx?size=S&username=${context._pageContext._user.email}`}
+            imageUrl={`/_layouts/15/userphoto.aspx?size=S&username=${currentUserEmail}`}
           />
           <div className={HeaderStyles.profileTitle}>
-            <h1>Good morning, {context._pageContext._user.displayName}!</h1>
+            <h1>Good morning, {currentUserName}!</h1>
             <label>Have a great day on your management</label>
           </div>
         </div>
-        <div className={HeaderStyles.headerTitle}>
-          <label>My Request</label>
-        </div>
-        <div className={HeaderStyles.headerFilters}>
+        <div className="tab-container">
           <Button
-            onClick={() => setOpenRequestForm(true)}
-            className="normalButton"
-            label="Add request"
-            icon="pi pi-plus"
-          />
+            className={
+              activeTab === `${Config.TabNames?.Request}` ? "tab active" : "tab"
+            }
+            onClick={() => setActiveTab(`${Config.TabNames?.Request}`)}
+          >
+            My request
+          </Button>
+          <Button
+            className={
+              activeTab === `${Config.TabNames?.Approval}`
+                ? "tab active"
+                : "tab"
+            }
+            onClick={() => setActiveTab(`${Config.TabNames?.Approval}`)}
+          >
+            My approval
+          </Button>
         </div>
+        {activeTab == `${Config.TabNames?.Request}` ? (
+          <div className={HeaderStyles.headerFilters}>
+            <Button
+              onClick={() => setOpenRequestForm(true)}
+              className="normalButton"
+              label="Add request"
+              icon="pi pi-plus"
+            />
+          </div>
+        ) : (
+          ""
+        )}
       </div>
-      {openRequestForm && (
-        <div className="formPopup">
-          <RequestForm setOpenRequestForm={setOpenRequestForm} />
-        </div>
-      )}
+
+      <div>
+        {activeTab == `${Config.TabNames?.Request}` ? (
+          <>
+            {openRequestForm && (
+              <div className="formPopup">
+                <RequestForm setOpenRequestForm={setOpenRequestForm} />
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {activeTab == `${Config.TabNames?.Approval}` ? (
+              <MyApproval context={context} />
+            ) : (
+              ""
+            )}
+          </>
+        )}
+      </div>
     </>
   );
 };

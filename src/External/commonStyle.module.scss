@@ -12,6 +12,7 @@ $fontSizebig: 14px;
 $fontSizeMedium: 12px;
 $fontSizeSmall: 10px;
 $backgroundTranspanrent: #26262685;
+
 //Using Styles For Normal CssFile:
 :root {
   --themeColor: #4e232a;
@@ -27,6 +28,23 @@ $backgroundTranspanrent: #26262685;
   --commonBorderRadius: 4px;
   --fontSizebig: 16px;
   --fontSizeMedium: 14px;
-  --fontSizeSmall: 11px;
+  --fontSizeSmall: 12px;
+  --fontSizeXSmall: 13px;
+  --DataTablePadding: 10px 20px 10px 20px;
   --borderColor: #ebebed;
+  --EditIconColor: #20ae54;
+  --ViewIconColor: #4e232a;
+  --DeleteIconColor: #e23235;
+}
+
+//Status Template Item Style:
+.statusItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px 6px 12px;
+  border-radius: $commonBorderRadius;
+  width: 100px;
+  font-weight: 600;
+  font-size: $fontSizeMedium;
 }

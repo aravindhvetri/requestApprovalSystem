@@ -10,6 +10,8 @@
     "serve": "gulp bundle --custom-serve --max_old_space_size=4096 && fast-serve"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@microsoft/sp-core-library": "1.14.0",
     "@microsoft/sp-lodash-subset": "1.14.0",
     "@microsoft/sp-office-ui-fabric-core": "1.14.0",
