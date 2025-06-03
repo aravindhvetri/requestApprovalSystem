@@ -22,7 +22,7 @@ const HeaderComponent = ({ context }) => {
   const [openRequestForm, setOpenRequestForm] = useState(false);
 
   return (
-    <>
+     <>
       <div className={HeaderStyles.mainContainer}>
         <div className={HeaderStyles.profileHeader}>
           <Persona
@@ -57,9 +57,7 @@ const HeaderComponent = ({ context }) => {
           <div className={HeaderStyles.headerFilters}>
             <Button
               onClick={() => setOpenRequestForm(true)}
-              className="normalButton"
               label="Add request"
-              icon="pi pi-plus"
             />
           </div>
         ) : (
@@ -72,7 +70,11 @@ const HeaderComponent = ({ context }) => {
           <>
             {openRequestForm && (
               <div className="formPopup">
-                <RequestForm setOpenRequestForm={setOpenRequestForm} />
+                <RequestForm
+                  context={context}
+                  openRequestForm={openRequestForm}
+                  setOpenRequestForm={setOpenRequestForm}
+                />
               </div>
             )}
           </>

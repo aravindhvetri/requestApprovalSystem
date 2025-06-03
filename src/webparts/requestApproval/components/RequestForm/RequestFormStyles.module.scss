@@ -1,6 +1,36 @@
 @import "../../../../External/commonStyle.module.scss";
-.mainContainer {
+
+.dialogContentStyles {
   width: 100%;
-  background-color: #26262685;
   height: 100%;
+  border-top: 1px solid $liteGreyBackground;
+  padding: 5px 0px;
+  display: grid;
+  .contentTitle {
+    font-size: $fontSizeSmall;
+    color: $darkGrey;
+    border-bottom: 1px solid $darkGrey;
+    width: fit-content;
+    font-weight: 500;
+    height: fit-content;
+  }
+  .contentData {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    flex-wrap: wrap;
+    padding: 10px 0;
+  }
+  .appproversHeader {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .buttonsContainer {
+    display: flex;
+    margin-top: 20px;
+    gap: 2%;
+    justify-content: end;
+  }
 }
