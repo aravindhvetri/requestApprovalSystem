@@ -49,30 +49,164 @@ div[data-automationid="SiteHeader"] {
   border: 2px solid var(--red);
 }
 
-/* Buttons styles................... */
-.normalButton {
+/* Dialog box styles.................... */
+.p-dialog .p-dialog-header {
+  border-bottom: 0;
+}
+.p-dialog-title {
+  font-size: var(--fontSizeMedium);
+}
+
+/* Input text styles........................ */
+.p-inputtext {
+  width: 180px;
+  height: 30px;
+  padding: 8px;
+  font-size: var(--fontSizeSmall);
+  border-radius: 0 !important;
+  border: 1px solid var(--liteGreyBackground);
+  color: var(--black);
+}
+.p-inputtext:enabled:focus {
+  box-shadow: none;
+}
+.p-inputtext:enabled:focus {
+  border-color: var(--darkGrey);
+}
+
+/* Dropdown styles......................... */
+.p-dropdown {
+  border: 1px solid var(--liteGreyBackground);
+  border-radius: 0 !important;
+  box-shadow: none;
+  padding: 2px;
+  margin: 0 !important;
+  width: 180px;
+  height: 30px;
+}
+.p-dropdown:focus-within {
+  border-color: var(--darkGrey);
+}
+.p-dropdown-items-wrapper {
+  font-size: var(--fontSizeSmall);
+}
+.p-placeholder {
+  color: var(--darkGrey);
+  font-size: var(--fontSizeSmall);
+}
+.p-dropdown-trigger-icon {
+  color: var(--darkGrey);
+  height: 13px;
+  width: 13px;
+}
+.p-dropdown-item.p-highlight {
+  background: var(--liteGreyBackground);
+  color: var(--darkGrey);
+}
+.p-dropdown .p-inputtext {
+  height: 100%;
+  padding: 4px;
+  font-size: var(--fontSizeSmall);
+  border: 0px;
+}
+.p-dropdown .p-dropdown-clear-icon {
+  color: #3b63a5;
+  border: 0px;
+  top: 62%;
+  height: 9px;
+  width: 9px;
+}
+
+/* File upload styles........................ */
+.p-fileupload .p-fileupload-buttonbar {
+  display: flex;
+  justify-content: end;
+  border: 0;
+  background-color: transparent;
+  padding: 0 0 5px 0;
+}
+.p-fileupload-buttonbar button {
+  display: none;
+}
+.p-fileupload .p-fileupload-content {
+  border: 1px dashed var(--liteGreyBackground);
+  padding: 10px;
+}
+.p-fileupload .p-fileupload-content .p-button {
+  background-color: transparent;
+}
+.fileUploadEmptyMsg {
+  display: grid;
+  justify-content: center;
+  font-size: var(--fontSizeSmall);
+  color: var(--backgroundTranspanrent);
+}
+.p-fileupload-filename {
+  font-size: var(--fontSizeMedium);
+  font-weight: 600;
+}
+.p-badge.p-badge-warning {
+  display: none;
+}
+.p-fileupload-file-thumbnail {
+  display: none;
+}
+.p-fileupload-row {
+  padding: 5px;
+  border-radius: 5px;
+  margin: 3px;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+.p-fileupload-row .p-icon {
+  height: 11px;
+  width: 11px;
+  background-color: transparent;
+  color: var(--themeColor);
+}
+.p-fileupload .p-fileupload-row > div {
+  padding: 2px;
+}
+.p-fileupload .p-fileupload-row span {
+  font-size: var(--fontSizeSmall);
+  color: var(--darkGrey);
+}
+.p-fileupload-content > .p-progressbar {
+  display: none;
+}
+
+/* Button styles....................... */
+.p-button .p-button-icon-left {
+  margin-right: 8px;
+  height: 11px;
+  width: 11px;
+}
+.p-button {
+  margin: 0 !important;
   color: var(--white);
   background-color: var(--themeColor);
   border: 0;
   border-radius: 0;
   box-shadow: none;
   font-size: var(--fontSizeMedium);
+  padding: 6px;
 }
-.normalButton:hover {
+.p-button:hover {
   color: var(--themeColor);
   background-color: var(--white);
   border: 1px solid var(--themeColor);
   box-shadow: none;
 }
-
-/* popup Design............ */
-.formPopup {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #ffffff00;
+.p-button .p-button-label {
+  font-size: 12px;
+}
+/* Close button..................... */
+.closeButton {
+  margin: 0 !important;
+  color: var(--black);
+  background-color: var(--darkGrey);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: var(--fontSizeMedium);
+  padding: 6px;
 }
