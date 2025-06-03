@@ -210,3 +210,84 @@ div[data-automationid="SiteHeader"] {
   font-size: var(--fontSizeMedium);
   padding: 6px;
 }
+
+/*Data Table Common styles........... */
+.p-datatable .p-datatable-thead > tr > th {
+  background-color: var(--liteGreyBackground);
+  padding: var(--DataTablePadding);
+  font-size: var(--fontSizeSmall);
+  border: 1px solid transparent;
+}
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: var(--DataTablePadding);
+  font-size: var(--fontSizeXSmall);
+  border: 1px solid transparent;
+}
+
+/* Custom Common styles for the Paginators................... */
+.p-paginator .p-paginator-pages .p-paginator-page {
+  background-color: var(--black);
+  border-color: var(--black);
+  color: var(--green);
+  border-radius: 50%;
+  height: 28px;
+  width: 28px;
+  margin: 0px 10px 0 10px;
+  font-size: var(--fontSizeSmall);
+  min-width: 0;
+}
+.p-datatable .p-paginator-bottom {
+  border-width: 0;
+}
+.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  background: var(--black);
+  border-color: var(--black);
+  color: var(--white);
+  border-radius: 50%;
+}
+.p-paginator .p-paginator-first,
+.p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-next,
+.p-paginator .p-paginator-last {
+  color: var(--black);
+  border: 1px solid transparent;
+  margin: 0px 5px 0 5px;
+  height: 10px;
+}
+.p-paginator .p-paginator-first:not(.p-disabled):not(.p-highlight):hover,
+.p-paginator .p-paginator-prev:not(.p-disabled):not(.p-highlight):hover,
+.p-paginator .p-paginator-next:not(.p-disabled):not(.p-highlight):hover,
+.p-paginator .p-paginator-last:not(.p-disabled):not(.p-highlight):hover {
+  background-color: transparent;
+}
+
+/* Custom styles for the Tob Tabes when it is disabled................... */
+.tab-container {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+.tab-container .p-button:focus {
+  box-shadow: none;
+}
+.tab {
+  padding: 6px 16px;
+  border: none;
+  background-color: var(--white);
+  color: var(--themeColor);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  font-size: var(--fontSizeXSmall);
+}
+.tab:hover {
+  background-color: var(--liteGreyBackground);
+}
+.tab.active {
+  background-color: var(--themeColor);
+  color: var(--white);
+}
+.tab-content {
+  margin-top: 20px;
+  font-size: 14px;
+}
