@@ -19,12 +19,14 @@ const HeaderComponent = ({ context }) => {
   const currentUserName = context._pageContext._user.displayName;
   //States:
   const [activeTab, setActiveTab] = useState(`${Config.TabNames.Request}`);
-  const [openRequestForm, setOpenRequestForm] = useState(false);
+  const [openRequestForm, setOpenRequestForm] = useState({
+    ...Config.DialogConfig,
+  });
 
   return (
-     <>
+    <>
       <div className={HeaderStyles.mainContainer}>
-        <div className={HeaderStyles.profileHeader}>
+        <div className={`profileHeader ${HeaderStyles.profileHeader}`}>
           <Persona
             imageUrl={`/_layouts/15/userphoto.aspx?size=S&username=${currentUserEmail}`}
           />
@@ -56,7 +58,12 @@ const HeaderComponent = ({ context }) => {
         {activeTab == `${Config.TabNames?.Request}` ? (
           <div className={HeaderStyles.headerFilters}>
             <Button
-              onClick={() => setOpenRequestForm(true)}
+              onClick={() =>
+                setOpenRequestForm({
+                  ...Config.DialogConfig,
+                  RequestForm: true,
+                })
+              }
               label="Add request"
             />
           </div>
@@ -68,15 +75,11 @@ const HeaderComponent = ({ context }) => {
       <div>
         {activeTab == `${Config.TabNames?.Request}` ? (
           <>
-            {openRequestForm && (
-              <div className="formPopup">
-                <RequestForm
-                  context={context}
-                  openRequestForm={openRequestForm}
-                  setOpenRequestForm={setOpenRequestForm}
-                />
-              </div>
-            )}
+            <RequestForm
+              context={context}
+              openRequestForm={openRequestForm}
+              setOpenRequestForm={setOpenRequestForm}
+            />
           </>
         ) : (
           <>

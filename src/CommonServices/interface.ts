@@ -1,6 +1,7 @@
 //Dropdown
 export interface IBasicDropdown {
   name: string;
+  id: number;
 }
 export interface IDropdownDetails {
   requestTypesChoice: IBasicDropdown[];
@@ -17,6 +18,8 @@ export interface IRequestDetails {
   Status: string;
   Amount: number;
   Description: string;
+  ApprovalJson: IApprovalFlow[];
+  Author: IPeoplePickerDetails;
   IsDelete: boolean;
 }
 
@@ -32,15 +35,15 @@ export interface IPatchRequestDetails {
 export interface IApprovalFlow {
   Currentstage: number;
   TotalStages: number;
-  stages: Stage[];
+  stages: IStage[];
 }
-interface Stage {
+export interface IStage {
   stage: number;
-  ApprovalType: number;
+  approvalType: number;
   stageStatusCode: number;
-  approvers: Approver[];
+  approvers: IStageApprover[];
 }
-interface Approver {
+export interface IStageApprover {
   id: number;
   name: string;
   email: string;
@@ -49,10 +52,40 @@ interface Approver {
 //Whole List Names Interfaces:
 export interface IListNames {
   RequestDetails: string;
+  ApprovalHistory: string;
 }
 
 //Tab Names Interface:
 export interface ITabNames {
   Request: string;
   Approval: string;
+}
+
+//PeoplePicker Details:
+export interface IPeoplePickerDetails {
+  id: number;
+  name: string;
+  email: string;
+}
+
+//Approval History Interface:
+export interface IApprovalHistory {
+  ID: number;
+  RequestID: string;
+  Approver: IPeoplePickerDetails;
+  Status: string;
+  Comments: string;
+  Date: string;
+}
+
+//Dialog pop_up Interface:
+export interface IDialogPopUp {
+  RequestForm: boolean;
+  ApprovalHistory: boolean;
+}
+
+//Approval Stage Error Details
+export interface IApprovalFlowValidation {
+  stageValidation: string;
+  stageErrIndex: number[];
 }

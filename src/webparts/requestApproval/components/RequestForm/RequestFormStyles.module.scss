@@ -34,3 +34,43 @@
     justify-content: end;
   }
 }
+
+.label {
+  @include commonLabel;
+}
+.approvalConfigContainer {
+  padding: 10px 0px 0px 0px;
+  width: 100%;
+  gap: 15px;
+  .approvalSubContainer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    .approvalStagesContainer {
+      width: 38%;
+    }
+    .stageConfigContainer {
+      width: 60%;
+      height: fit-content;
+      .stageFormContainer {
+        width: 100%;
+        border: 1px solid var(--borderColor);
+        border-radius: 6px;
+        padding: 20px;
+        .stageConfigHeader {
+          @include commonLabel;
+          font-weight: 500;
+        }
+        .deleteStageButton {
+          display: flex;
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
+}
+.addStageButton {
+  width: 100%;
+  margin: 20px 0px 20px 0px;
+}

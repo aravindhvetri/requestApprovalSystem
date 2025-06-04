@@ -6,7 +6,7 @@ $black: #202735;
 $blue: #3264e2;
 $green: #11a949;
 $red: #e23235;
-$darkGrey: #b4b4b4;
+$darkGrey: #626567;
 $liteGreyBackground: #e5e5e5;
 $commonBorderRadius: 4px;
 $fontSizebig: 16px;
@@ -37,6 +37,7 @@ $backgroundTranspanrent: #26262685;
   --EditIconColor: #20ae54;
   --ViewIconColor: #4e232a;
   --DeleteIconColor: #e23235;
+  --HistoryIconColor: #4d3130;
 }
 
 //Status Template Item Style:
@@ -48,5 +49,27 @@ $backgroundTranspanrent: #26262685;
   border-radius: $commonBorderRadius;
   width: 100px;
   font-weight: 600;
-  font-size: $fontSizeMedium;
+  font-size: $fontSizeSmall;
+}
+
+//multiPeoplepicker Section Style:
+.Persona {
+  width: 30px;
+  height: 30px;
+  background-color: var(--liteGreyBackground);
+  color: var(--themeColor);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  font-size: 13px;
+  .AllPersona {
+    visibility: visible;
+  }
+}
+
+//Common Label Style:
+@mixin commonLabel {
+  font-size: $fontSizeSmall;
+  color: $black;
 }

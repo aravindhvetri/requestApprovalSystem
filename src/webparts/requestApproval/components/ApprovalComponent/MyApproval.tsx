@@ -4,14 +4,21 @@ import { useEffect, useState } from "react";
 //Common Services Imports:
 import SPServices from "../../../../CommonServices/SPServices";
 import { Config } from "../../../../CommonServices/Config";
-import { IRequestDetails } from "../../../../CommonServices/interface";
-import { statusTemplate } from "../../../../CommonServices/CommonTemplate";
+import {
+  IPeoplePickerDetails,
+  IRequestDetails,
+} from "../../../../CommonServices/interface";
+import {
+  peoplePickerTemplate,
+  statusTemplate,
+} from "../../../../CommonServices/CommonTemplate";
 //PrimeReact Imports:
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 //Styles Imports:
 import "../../../../External/style.css";
 import MyApprovalStyles from "./MyApproval.module.scss";
+import { peoplePicker } from "office-ui-fabric-react/lib/components/FloatingPicker/PeoplePicker/PeoplePicker.scss";
 
 const MyApproval = ({ context }) => {
   //States:
@@ -19,6 +26,7 @@ const MyApproval = ({ context }) => {
     ...Config.RequestDetails,
   });
   const [requestDetails, setRequestDetails] = useState<IRequestDetails[]>([]);
+  console.log(requestDetails, " Request Details from MyApproval Component");
 
   //Initial Render:
   useEffect(() => {
@@ -31,7 +39,8 @@ const MyApproval = ({ context }) => {
       Listname: Config.ListNames.RequestDetails,
       Orderby: "Modified",
       Orderbydecorasc: false,
-      Select: "*",
+      Select: "*,Author/ID,Author/Title,Author/EMail",
+      Expand: "Author",
       Filter: [
         {
           FilterKey: "IsDelete",
@@ -41,8 +50,16 @@ const MyApproval = ({ context }) => {
       ],
     })
       .then((response: any) => {
+        console.log(response, " Response from SPReadItems");
         const tempRequestDetails: IRequestDetails[] = [];
         response.forEach((item) => {
+          const author: IPeoplePickerDetails = item?.Author
+            ? {
+                id: item.Author.ID,
+                name: item.Author.Title,
+                email: item.Author.EMail,
+              }
+            : null;
           tempRequestDetails.push({
             ID: item?.ID,
             RequestID: item?.RequestID,
@@ -51,6 +68,8 @@ const MyApproval = ({ context }) => {
             Status: item?.Status,
             Amount: item?.Amount,
             Description: item?.Notes,
+            ApprovalJson: item?.ApprovalJson,
+            Author: author,
             IsDelete: item?.IsDelete,
           });
         });
@@ -61,6 +80,11 @@ const MyApproval = ({ context }) => {
       });
   };
 
+  //Render Author Column:
+  const renderAuthorColumn = (rowData: IRequestDetails) => {
+    return <div>{peoplePickerTemplate(rowData?.Author)}</div>;
+  };
+
   //Render Status Column:
   const renderStatusColumn = (rowData: IRequestDetails) => {
     return <div>{statusTemplate(rowData?.Status)}</div>;
@@ -69,15 +93,15 @@ const MyApproval = ({ context }) => {
   //Render Action Column:
   const renderActionColumn = (rowData: IRequestDetails) => {
     return (
-      <div className={MyApprovalStyles.actionIcons}>
+      <div className="actionIcons">
         <div>
-          <i className={`${MyApprovalStyles.EditIcon} pi pi-pencil`}></i>
+          <i className="EditIcon pi pi-pencil"></i>
         </div>
         <div>
-          <i className={`${MyApprovalStyles.ViewIcon} pi pi-eye`}></i>
+          <i className="ViewIcon pi pi-eye"></i>
         </div>
         <div>
-          <i className={`${MyApprovalStyles.DeleteIcon} pi pi-trash`}></i>
+          <i className="DeleteIcon pi pi-trash"></i>
         </div>
       </div>
     );
@@ -99,6 +123,11 @@ const MyApproval = ({ context }) => {
         >
           <Column field="RequestID" header="Request id"></Column>
           <Column field="RequestType" header="Request type"></Column>
+          <Column
+            field="Requestor"
+            header="Requested by"
+            body={renderAuthorColumn}
+          ></Column>
           <Column field="Department" header="Department"></Column>
           <Column
             field="Status"
