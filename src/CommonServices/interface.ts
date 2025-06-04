@@ -1,4 +1,3 @@
-
 //Dropdown
 export interface IBasicDropdown {
   name: string;
@@ -27,9 +26,8 @@ export interface IPatchRequestDetails {
   RequestType: string;
   Department: string;
   Amount: number;
-  Status: string;
   Notes: string;
-  ApprovalJson: IApprovalFlow;
+  ApprovalJson: IApprovalFlow[];
 }
 export interface IApprovalFlow {
   Currentstage: number;
@@ -47,7 +45,7 @@ interface Approver {
   name: string;
   email: string;
   statusCode: number;
-
+}
 //Whole List Names Interfaces:
 export interface IListNames {
   RequestDetails: string;

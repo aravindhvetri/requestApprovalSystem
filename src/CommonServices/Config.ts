@@ -1,4 +1,3 @@
-
 import {
   IApprovalFlow,
   IBasicDropdown,
@@ -10,11 +9,11 @@ import {
 } from "./interface";
 
 export namespace Config {
-   //Whole List Names Configurations:
+  //Whole List Names Configurations:
   export const ListNames: IListNames = {
     RequestDetails: "RequestDetails",
   };
-  
+
   //Dropdown config
   export const dropdownConfig: IDropdownDetails = {
     requestTypesChoice: [],
@@ -24,21 +23,22 @@ export namespace Config {
       { name: "Anyone can approve" },
     ],
   };
-  
+
   //Request Details Config
   export const requestDetailsConfig: IPatchRequestDetails = {
     RequestID: "",
     RequestType: "",
     Department: "",
     Amount: null,
-    Status: "",
     Notes: "",
-    ApprovalJson: {
-      Currentstage: 1,
-      TotalStages: 0,
-      stages: [],
-    };
-    
+    ApprovalJson: [
+      {
+        Currentstage: 1,
+        TotalStages: 0,
+        stages: [],
+      },
+    ],
+  };
   //Request Details Configurations:
   export const RequestDetails: IRequestDetails = {
     ID: null,
@@ -56,5 +56,4 @@ export namespace Config {
     Request: "request",
     Approval: "approval",
   };
- 
 }

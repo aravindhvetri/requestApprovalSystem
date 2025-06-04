@@ -19,6 +19,7 @@ import {
 import { Config } from "../../../../CommonServices/Config";
 import {
   IBasicDropdown,
+  IPatchRequestDetails,
   IRequestDetails,
 } from "../../../../CommonServices/interface";
 import { Button } from "primereact/button";
@@ -31,7 +32,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
   const [deparmentsChoice, setDepartmentChoices] = useState<IBasicDropdown[]>(
     Config.dropdownConfig.deparmentsChoice
   );
-  const [requestDetails, setRequestDetails] = useState<IRequestDetails>({
+  const [requestDetails, setRequestDetails] = useState<IPatchRequestDetails>({
     ...Config.requestDetailsConfig,
   });
   const [approvalType, setApprovalType] = useState<IBasicDropdown[]>({
@@ -42,7 +43,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
   const getChoices = async (columnName) => {
     try {
       const res: any = await SPServices.SPGetChoices({
-        Listname: Config.listNames.RequestDetails,
+        Listname: Config.ListNames.RequestDetails,
         FieldName: columnName,
       });
       let tempArrChoices: IBasicDropdown[] = [];
@@ -66,20 +67,42 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
     setRequestDetails({ ...requestDetails });
   };
 
+  //Add request details
+  const addRequestDetails = async () => {
+    try {
+      const res = await SPServices.SPAddItem({
+        Listname: Config.ListNames.RequestDetails,
+        RequestJSON: {
+          RequestID: requestDetails?.RequestID,
+          RequestType: requestDetails?.RequestType,
+          Department: requestDetails?.Department,
+          Amount: requestDetails?.Amount,
+          Notes: requestDetails?.Notes,
+          ApprovalJson: JSON.stringify(requestDetails?.ApprovalJson),
+        },
+      });
+      setOpenRequestForm(false);
+    } catch {
+      (err) => console.log("addRequestDetails err", err);
+    }
+  };
+
   //useEffect
   useEffect(() => {
     getChoices("RequestType");
     getChoices("Department");
   }, []);
   useEffect(() => {
-    if (requestDetails?.ApprovalJson?.stages.length === 0) {
-      requestDetails["ApprovalJson"] = {
-        ...requestDetails["ApprovalJson"],
-        TotalStages: 1,
-        stages: [
-          { stage: 1, ApprovalType: null, stageStatusCode: 0, approvers: [] },
-        ],
-      };
+    if (requestDetails?.ApprovalJson[0]?.stages.length === 0) {
+      requestDetails["ApprovalJson"] = [
+        {
+          ...requestDetails["ApprovalJson"][0],
+          TotalStages: 1,
+          stages: [
+            { stage: 1, ApprovalType: null, stageStatusCode: 0, approvers: [] },
+          ],
+        },
+      ];
     }
   }, [requestDetails]);
   return (
@@ -169,7 +192,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
               label="Close"
               onClick={() => setOpenRequestForm(false)}
             />
-            <Button label="Submit" />
+            <Button onClick={() => addRequestDetails()} label="Submit" />
           </div>
         </div>
       </Dialog>
