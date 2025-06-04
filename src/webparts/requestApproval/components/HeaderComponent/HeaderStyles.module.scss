@@ -2,15 +2,14 @@
 
 .mainContainer {
   width: 100%;
-  height: 200px;
   .profileHeader {
     display: flex;
     align-items: center;
     width: 100%;
     background-color: $liteGreyBackground;
     border-radius: $commonBorderRadius;
-    height: 33%;
-    padding-left: 10px;
+
+    padding: 10px;
     .profileTitle {
       display: block;
       h1 {
@@ -28,7 +27,7 @@
     display: flex;
     align-items: center;
     width: 100%;
-    height: 33%;
+
     label {
       font-size: 17px;
       font-weight: 500;
@@ -40,6 +39,6 @@
     align-items: center;
     justify-content: right;
     width: 100%;
-    height: 33%;
+    padding-bottom: 20px;
   }
 }

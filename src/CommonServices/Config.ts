@@ -1,3 +1,4 @@
+import { App } from "@pnp/sp/appcatalog";
 import {
   IApprovalFlow,
   IBasicDropdown,
@@ -6,12 +7,15 @@ import {
   IRequestDetails,
   IPatchRequestDetails,
   ITabNames,
+  IDialogPopUp,
+  IApprovalFlowValidation,
 } from "./interface";
 
 export namespace Config {
   //Whole List Names Configurations:
   export const ListNames: IListNames = {
     RequestDetails: "RequestDetails",
+    ApprovalHistory: "ApprovalHistory",
   };
 
   //Dropdown config
@@ -19,8 +23,8 @@ export namespace Config {
     requestTypesChoice: [],
     deparmentsChoice: [],
     approvalType: [
-      { name: "Everyone should approve" },
-      { name: "Anyone can approve" },
+      { name: "Everyone should approve", id: 2 },
+      { name: "Anyone can approve", id: 1 },
     ],
   };
 
@@ -35,7 +39,9 @@ export namespace Config {
       {
         Currentstage: 1,
         TotalStages: 0,
-        stages: [],
+        stages: [
+          { stage: 1, approvalType: null, stageStatusCode: 0, approvers: [] },
+        ],
       },
     ],
   };
@@ -48,6 +54,12 @@ export namespace Config {
     Status: "",
     Amount: null,
     Description: "",
+    ApprovalJson: [],
+    Author: {
+      id: null,
+      name: "",
+      email: "",
+    },
     IsDelete: false,
   };
 
@@ -55,5 +67,17 @@ export namespace Config {
   export const TabNames: ITabNames = {
     Request: "request",
     Approval: "approval",
+  };
+
+  //Dialog pop_up Configurations:
+  export const DialogConfig: IDialogPopUp = {
+    RequestForm: false,
+    ApprovalHistory: false,
+  };
+
+  //Approval Stage Error Details
+  export const ApprovalFlowValidation: IApprovalFlowValidation = {
+    stageValidation: "",
+    stageErrIndex: [],
   };
 }

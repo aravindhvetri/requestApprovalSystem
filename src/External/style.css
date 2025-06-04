@@ -43,7 +43,7 @@ div[data-automationid="SiteHeader"] {
 .ms-Persona-details {
   padding: 0;
 }
-.ms-Image {
+.profileHeader .ms-Image {
   width: 40px !important;
   height: 40px !important;
   border: 2px solid var(--red);
@@ -226,9 +226,9 @@ div[data-automationid="SiteHeader"] {
 
 /* Custom Common styles for the Paginators................... */
 .p-paginator .p-paginator-pages .p-paginator-page {
-  background-color: var(--black);
-  border-color: var(--black);
-  color: var(--green);
+  background-color: #20273575;
+  border-color: #20273511;
+  color: var(--white);
   border-radius: 50%;
   height: 28px;
   width: 28px;
@@ -265,10 +265,13 @@ div[data-automationid="SiteHeader"] {
 .tab-container {
   display: flex;
   align-items: center;
-  margin-top: 20px;
+  margin: 20px 0px 20px 0px;
 }
 .tab-container .p-button:focus {
   box-shadow: none;
+}
+.tab-container .p-button:hover {
+  border: none !important;
 }
 .tab {
   padding: 6px 16px;
@@ -290,4 +293,61 @@ div[data-automationid="SiteHeader"] {
 .tab-content {
   margin-top: 20px;
   font-size: 14px;
+}
+
+/* Custom styles for the Action Containers and Icons................... */
+.actionIcons {
+  display: flex;
+  gap: 10px;
+}
+.EditIcon {
+  color: var(--EditIconColor);
+  font-size: var(--fontSizeMedium);
+  cursor: pointer;
+  font-weight: 600 !important;
+}
+.ViewIcon {
+  color: var(--ViewIconColor);
+  font-size: var(--fontSizeMedium);
+  cursor: pointer;
+  font-weight: 600 !important;
+}
+.DeleteIcon {
+  color: var(--DeleteIconColor);
+  font-size: var(--fontSizeMedium);
+  cursor: pointer;
+  font-weight: 600 !important;
+}
+.HistoryIcon {
+  color: var(--HistoryIconColor);
+  font-size: var(--fontSizeMedium);
+  cursor: pointer;
+  font-weight: 600 !important;
+}
+
+/* Custom styles for the MultiPeoplePicker and SinglePeoplePicker styles................... */
+.user-selector-group .ms-Persona {
+  min-width: 0px;
+  width: 24px;
+  padding-top: 0;
+}
+.user-selector-group .ms-Image {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+/* Custom styles for the Dialog Pop_up styles................... */
+.p-dialog {
+  border: 1px solid transparent;
+}
+
+/* Required Fields........................ */
+.required {
+  color: red;
+  margin-left: 4px;
+}
+.errorMsg {
+  color: #ef250f;
+  font-size: 11px;
+  font-weight: 600;
 }
