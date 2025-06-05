@@ -33,6 +33,7 @@ import {
   IStageApprover,
 } from "../../../../CommonServices/interface";
 import {
+  deepClone,
   multiplePeoplePickerTemplate,
   peoplePickerTemplate,
   statusTemplate,
@@ -50,9 +51,11 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
   const [deparmentsChoice, setDepartmentChoices] = useState<IBasicDropdown[]>(
     Config.dropdownConfig.deparmentsChoice
   );
-  const [requestDetails, setRequestDetails] = useState<IPatchRequestDetails>({
-    ...Config.requestDetailsConfig,
-  });
+  const cloneRequestDetails: IPatchRequestDetails = deepClone(
+    Config.requestDetailsConfig
+  );
+  const [requestDetails, setRequestDetails] =
+    useState<IPatchRequestDetails>(cloneRequestDetails);
   const [approvalType, setApprovalType] = useState<IBasicDropdown[]>([
     ...Config.dropdownConfig.approvalType,
   ]);
@@ -63,7 +66,9 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
   const [validation, setValidation] = useState<IApprovalFlowValidation>({
     ...Config.ApprovalFlowValidation,
   });
-  console.log(getApprovalHistoryDetails, " Approval History Details");
+  console.log("requestDetails", requestDetails);
+  console.log("selectedStage", selectedStage);
+  console.log("validation", validation);
 
   //Initial Render:
   useEffect(() => {
@@ -71,11 +76,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
     getChoices("RequestType");
     getChoices("Department");
   }, []);
-
   //States for Approval Json:
-  useEffect(() => {
-    stagesDataTable();
-  }, [validation, selectedStage]);
   useEffect(() => {
     if (openRequestForm?.RequestForm) {
       setSelectedStage({
@@ -83,6 +84,8 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
         approvalType: null,
         approver: [],
       });
+    } else if (!openRequestForm?.RequestForm) {
+      setRequestDetails(cloneRequestDetails);
     }
   }, [openRequestForm?.RequestForm]);
 
@@ -409,7 +412,6 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
 
   //Render Approvers column
   const renderApproversColumn = (rowData) => {
-    console.log("rowdata", rowData);
     const approvers: IPeoplePickerDetails[] = rowData?.approvers?.map(
       ({ statusCode, ...rest }) => rest
     );
@@ -450,9 +452,9 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
       ...requestDetails,
     });
   };
-
   //Stages data table
   const stagesDataTable = () => {
+    debugger;
     return (
       <DataTable
         value={requestDetails?.ApprovalJson[0].stages}
@@ -495,7 +497,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
                   (e) =>
                     e ===
                     requestDetails?.ApprovalJson[0]?.stages.findIndex(
-                      (e) => e.stage === rowData?.stage
+                      (res) => res.stage === rowData?.stage
                     )
                 ) && (
                   <div>
@@ -751,12 +753,12 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
             <Button
               className="closeButton"
               label="Close"
-              onClick={() =>
+              onClick={() => {
                 setOpenRequestForm({
                   ...Config.DialogConfig,
                   RequestForm: false,
-                })
-              }
+                });
+              }}
             />
             <Button
               onClick={() => validRequiredField("submit")}
