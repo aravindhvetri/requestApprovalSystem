@@ -9,6 +9,7 @@ import {
   ITabNames,
   IDialogPopUp,
   IApprovalFlowValidation,
+  IDelModal,
 } from "./interface";
 
 export namespace Config {
@@ -79,5 +80,11 @@ export namespace Config {
   export const ApprovalFlowValidation: IApprovalFlowValidation = {
     stageValidation: "",
     stageErrIndex: [],
+  };
+
+  //Delete confirmation Details:
+  export const initialdelModal: IDelModal = {
+    isOpen: false,
+    id: null,
   };
 }

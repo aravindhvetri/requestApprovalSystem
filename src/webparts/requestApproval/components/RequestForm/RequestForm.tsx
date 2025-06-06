@@ -16,6 +16,7 @@ import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Label } from "office-ui-fabric-react";
+
 //Common Service imports:
 import { Config } from "../../../../CommonServices/Config";
 import {
@@ -26,6 +27,7 @@ import {
   IApprovalFlowValidation,
   IApprovalHistory,
   IBasicDropdown,
+  IDelModal,
   IPatchRequestDetails,
   IPeoplePickerDetails,
   IRequestDetails,
@@ -66,9 +68,9 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
   const [validation, setValidation] = useState<IApprovalFlowValidation>({
     ...Config.ApprovalFlowValidation,
   });
-  console.log("requestDetails", requestDetails);
-  console.log("selectedStage", selectedStage);
-  console.log("validation", validation);
+  const [delModal, setDelModal] = useState<IDelModal>({
+    ...Config.initialdelModal,
+  });
 
   //Initial Render:
   useEffect(() => {
@@ -193,6 +195,20 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
     return <div>{statusTemplate(rowData?.Status)}</div>;
   };
 
+  //IsDelete update in Approval config
+  const updateIsDelete = () => {
+    SPServices.SPUpdateItem({
+      Listname: Config.ListNames.RequestDetails,
+      ID: delModal.id,
+      RequestJSON: { IsDelete: true },
+    })
+      .then(() => {
+        getRequestApprovalDetails();
+        setDelModal({ isOpen: false, id: null });
+      })
+      .catch((err) => console.log("updateIsDelete error", err));
+  };
+
   //Render Stages Column:
   const renderStagesColumn = (rowData: IRequestDetails) => {
     const stages = rowData?.ApprovalJson?.flatMap(
@@ -252,11 +268,14 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
         <div>
           <i className="EditIcon pi pi-pencil"></i>
         </div>
-        <div>
+        {/* <div>
           <i className="ViewIcon pi pi-eye"></i>
-        </div>
+        </div> */}
         <div>
-          <i className="DeleteIcon pi pi-trash"></i>
+          <i
+            onClick={() => setDelModal({ isOpen: true, id: rowData?.ID })}
+            className="DeleteIcon pi pi-trash"
+          ></i>
         </div>
         <div>
           <i
@@ -407,7 +426,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
         )
       );
     }
-    // setValidation({ ...Config.ApprovalFlowValidation });
+    setValidation({ ...Config.ApprovalFlowValidation });
   };
 
   //Render Approvers column
@@ -454,11 +473,9 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
   };
   //Stages data table
   const stagesDataTable = () => {
-    debugger;
     return (
       <DataTable
         value={requestDetails?.ApprovalJson[0].stages}
-        // className="custom-card-table"
         selectionMode="single"
         selection={selectedStage}
         scrollable
@@ -803,6 +820,45 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
           ></Column>
           <Column field="Comments" header="Comments"></Column>
         </DataTable>
+      </Dialog>
+      <Dialog
+        className="modal-template confirmation"
+        draggable={false}
+        blockScroll={false}
+        resizable={false}
+        visible={delModal.isOpen}
+        style={{ width: "20rem" }}
+        onHide={() => {
+          setDelModal({ isOpen: false, id: null });
+        }}
+      >
+        <div className="modal-container">
+          <div className="modalIconContainer">
+            <i className={`pi pi-trash ${formStyles.DialogDelIcon}`}></i>
+          </div>
+          <div className="modal-content">
+            <div>
+              <div className="modal-header">
+                <h4>Confirmation</h4>
+              </div>
+              <p>Are you sure, you want to delete this request?</p>
+            </div>
+          </div>
+          <div className="modal-btn-section">
+            <Button
+              label="No"
+              className={`cancel-btn`}
+              onClick={() => {
+                setDelModal({ isOpen: false, id: null });
+              }}
+            />
+            <Button
+              className={`submit-btn`}
+              label="Yes"
+              onClick={() => updateIsDelete()}
+            />
+          </div>
+        </div>
       </Dialog>
     </>
   );

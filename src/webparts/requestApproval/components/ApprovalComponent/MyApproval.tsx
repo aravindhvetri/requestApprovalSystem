@@ -100,9 +100,6 @@ const MyApproval = ({ context }) => {
         <div>
           <i className="ViewIcon pi pi-eye"></i>
         </div>
-        <div>
-          <i className="DeleteIcon pi pi-trash"></i>
-        </div>
       </div>
     );
   };
