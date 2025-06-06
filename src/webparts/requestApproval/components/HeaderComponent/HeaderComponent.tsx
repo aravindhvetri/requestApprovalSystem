@@ -1,6 +1,6 @@
 //Common imports
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 //Style imports
 import "../../../../External/style.css";
 import HeaderStyles from "./HeaderStyles.module.scss";
@@ -12,6 +12,9 @@ import MyApproval from "../ApprovalComponent/MyApproval";
 import { Button } from "primereact/button";
 //Common Services Imports:
 import { Config } from "../../../../CommonServices/Config";
+import { toastNotify } from "../../../../CommonServices/CommonTemplate";
+import { Toast } from "primereact/toast";
+import { IFormMode } from "../../../../CommonServices/interface";
 
 const HeaderComponent = ({ context }) => {
   //Current User Details:
@@ -22,9 +25,29 @@ const HeaderComponent = ({ context }) => {
   const [openRequestForm, setOpenRequestForm] = useState({
     ...Config.DialogConfig,
   });
-
+  const [formMode, setFormMode] = useState<IFormMode>({
+    ...Config.FormModeConfig,
+  });
+  const toast = useRef(null);
+  //Toast Notification
+  const callToastNotify = (msg) => {
+    toast.current?.show({
+      severity: "success",
+      summary: "Success",
+      content: (prop) =>
+        toastNotify({
+          iconName: "pi-exclamation-triangle",
+          ClsName: "toast-imgcontainer-success",
+          type: "Success",
+          msg: `Request ${msg} successfully`,
+          image: require("../../../../../src/webparts/requestApproval/assets/successGif.gif"),
+        }),
+      life: 3000,
+    });
+  };
   return (
     <>
+      <Toast ref={toast} />
       <div className={HeaderStyles.mainContainer}>
         <div className={`profileHeader ${HeaderStyles.profileHeader}`}>
           <Persona
@@ -58,12 +81,13 @@ const HeaderComponent = ({ context }) => {
         {activeTab == `${Config.TabNames?.Request}` ? (
           <div className={HeaderStyles.headerFilters}>
             <Button
-              onClick={() =>
+              onClick={() => {
+                setFormMode({ ...Config.FormModeConfig, add: true });
                 setOpenRequestForm({
                   ...Config.DialogConfig,
                   RequestForm: true,
-                })
-              }
+                });
+              }}
               label="Add request"
             />
           </div>
@@ -78,7 +102,10 @@ const HeaderComponent = ({ context }) => {
             <RequestForm
               context={context}
               openRequestForm={openRequestForm}
+              formMode={formMode}
+              setFormMode={setFormMode}
               setOpenRequestForm={setOpenRequestForm}
+              callToastNotify={callToastNotify}
             />
           </>
         ) : (
