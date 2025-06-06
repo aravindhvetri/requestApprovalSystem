@@ -89,3 +89,9 @@ export interface IApprovalFlowValidation {
   stageValidation: string;
   stageErrIndex: number[];
 }
+
+//Delete Confirmation Interface
+export interface IDelModal {
+  isOpen: boolean;
+  id: number;
+}
