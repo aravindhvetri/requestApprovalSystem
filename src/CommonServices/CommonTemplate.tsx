@@ -3,7 +3,7 @@ import * as React from "react";
 //Styles Imports:
 import CommonStyles from "../External/commonStyle.module.scss";
 //Common Service Imports:
-import { IPeoplePickerDetails } from "./interface";
+import { IPeoplePickerDetails, IToaster } from "./interface";
 //Fluent UI Imports:
 import {
   DirectionalHint,
@@ -209,3 +209,53 @@ export const deepClone = (obj: any): any => {
   }
   return cloned;
 };
+
+//Common Toast Notification setups:
+export const toastNotify = (item: IToaster) => {
+  return (
+    <div className="flex flex-row align-items-center toastContainer">
+      <div className={item.ClsName}>
+        {
+          <>
+            {item.image ? (
+              <img
+                src={item.image}
+                alt="toast icon"
+                style={{ width: 40, height: 40 }}
+              />
+            ) : (
+              <i className={`pi ${item.iconName}`}></i>
+            )}
+          </>
+        }
+      </div>
+      <div>
+        <div className="toast-heading">{item.type}</div>
+        <div className="toast-message">{item.msg}</div>
+      </div>
+    </div>
+  );
+};
+
+//Get File icon
+// export const getFileIcon = (name: string) => {
+//   const extension = name.split(".").pop()?.toLowerCase();
+//   switch (extension) {
+//     case "pdf":
+//       return <PictureAsPdfIcon style={{ color: "red" }} />;
+//     case "doc":
+//     case "docx":
+//       return <DescriptionIcon style={{ color: "blue" }} />;
+//     case "xls":
+//     case "xlsx":
+//       return <DescriptionIcon style={{ color: "green" }} />;
+//     case "png":
+//     case "jpg":
+//     case "jpeg":
+//       return <ImageIcon style={{ color: "orange" }} />;
+//     case "txt":
+//       return <InsertDriveFileIcon style={{ color: "gray" }} />;
+//     default:
+//       return <InsertDriveFileIcon />;
+//   }
+// };

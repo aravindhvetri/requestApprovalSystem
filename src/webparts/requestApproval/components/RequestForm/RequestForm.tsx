@@ -1,6 +1,6 @@
 //Common imports:
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 //Style imports:
 import "../../../../External/style.css";
 import "./RequestForm.css";
@@ -26,6 +26,7 @@ import {
   IApprovalFlowValidation,
   IApprovalHistory,
   IBasicDropdown,
+  IFormMode,
   IPatchRequestDetails,
   IPeoplePickerDetails,
   IRequestDetails,
@@ -37,11 +38,22 @@ import {
   multiplePeoplePickerTemplate,
   peoplePickerTemplate,
   statusTemplate,
+  toastNotify,
 } from "../../../../CommonServices/CommonTemplate";
 import * as moment from "moment";
+import { sp, View } from "@pnp/sp/presets/all";
+import { Toast } from "primereact/toast";
 
-const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
+const RequestForm = ({
+  context,
+  setOpenRequestForm,
+  openRequestForm,
+  callToastNotify,
+  formMode,
+  setFormMode,
+}) => {
   //States:
+  const serverRelativeUrl = context?._pageContext?._site?.serverRelativeUrl;
   const [requestDetailsDataTable, setRequestDetailsDataTable] = useState<
     IRequestDetails[]
   >([]);
@@ -66,9 +78,13 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
   const [validation, setValidation] = useState<IApprovalFlowValidation>({
     ...Config.ApprovalFlowValidation,
   });
-  console.log("requestDetails", requestDetails);
-  console.log("selectedStage", selectedStage);
-  console.log("validation", validation);
+  const toast = useRef(null);
+  const [files, setFiles] = useState([]);
+  const [updateItem, setUpdateItem] = useState<IRequestDetails>({
+    ...Config.RequestDetails,
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  console.log("files", files);
 
   //Initial Render:
   useEffect(() => {
@@ -79,13 +95,31 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
   //States for Approval Json:
   useEffect(() => {
     if (openRequestForm?.RequestForm) {
+      if (updateItem?.ID) {
+        setRequestDetails({
+          RequestID: updateItem?.RequestID,
+          RequestType: updateItem?.RequestType,
+          Department: updateItem?.Department,
+          Amount: updateItem?.Amount,
+          Notes: updateItem?.Description,
+          ApprovalJson: updateItem?.ApprovalJson,
+        });
+      } else {
+        requestDetails["RequestID"] = `R-${requestDetailsDataTable?.length
+          .toString()
+          .padStart(4, "0")}`;
+        setRequestDetails({ ...requestDetails });
+      }
       setSelectedStage({
         stage: 1,
         approvalType: null,
         approver: [],
       });
     } else if (!openRequestForm?.RequestForm) {
+      setFormMode({ ...Config.FormModeConfig });
+      setUpdateItem({ ...Config.RequestDetails });
       setRequestDetails(cloneRequestDetails);
+      getRequestApprovalDetails();
     }
   }, [openRequestForm?.RequestForm]);
 
@@ -164,7 +198,30 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
     requestDetails[key] = value;
     setRequestDetails({ ...requestDetails });
   };
-
+  //Update Request details
+  const updateRequestDetails = async () => {
+    try {
+      const res = await SPServices.SPUpdateItem({
+        Listname: Config.ListNames.RequestDetails,
+        RequestJSON: {
+          RequestID: requestDetails?.RequestID,
+          RequestType: requestDetails?.RequestType,
+          Department: requestDetails?.Department,
+          Amount: requestDetails?.Amount,
+          Notes: requestDetails?.Notes,
+          ApprovalJson: JSON.stringify(requestDetails?.ApprovalJson),
+        },
+        ID: updateItem?.ID,
+      });
+      setOpenRequestForm({
+        ...Config.DialogConfig,
+        RequestForm: false,
+      });
+      callToastNotify("updated");
+    } catch {
+      (err) => console.log("update request details err", err);
+    }
+  };
   //Add request details:
   const addRequestDetails = async () => {
     try {
@@ -179,12 +236,98 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
           ApprovalJson: JSON.stringify(requestDetails?.ApprovalJson),
         },
       });
+      addFiles(res);
+    } catch {
+      (err) => console.log("addRequestDetails err", err);
+    }
+  };
+
+  //Add Files in Library
+  const addFiles = async (item) => {
+    console.log("item", item);
+    try {
+      const folderPath = `${serverRelativeUrl}/${Config.libraryNamesConfig?.RequestAttachments}/Requestors`;
+      const requestId = `${item?.data?.ID}`;
+
+      for (const file of files) {
+        const fileBuffer = await file.arrayBuffer();
+        const uploadResult = await sp.web
+          .getFolderByServerRelativeUrl(folderPath)
+          .files.add(file.name, fileBuffer, true);
+        await uploadResult.file.listItemAllFields.get().then(async (item) => {
+          console.log("item", item);
+          try {
+            await sp.web.lists
+              .getByTitle(Config.libraryNamesConfig?.RequestAttachments)
+              .items.getById(item.Id)
+              .update({
+                RequestIDId: requestId,
+              });
+          } catch {
+            (err) => console.log("Update requestId err", err);
+          }
+        });
+      }
+      setFiles([]);
       setOpenRequestForm({
         ...Config.DialogConfig,
         RequestForm: false,
       });
+      callToastNotify("added");
     } catch {
-      (err) => console.log("addRequestDetails err", err);
+      (err) => console.log("addFiles err", err);
+    }
+  };
+  //Remove file :
+  const removeFile = (fileName: string) => {
+    const updatedFiles = files.filter((file) => file.name !== fileName);
+    setFiles(updatedFiles);
+  };
+  //Handle File Selection:
+  const handleFileSelection = async (e, files, setFiles, toast, Config) => {
+    try {
+      const existingSPFiles = await sp.web.lists
+        .getByTitle(Config.libraryNamesConfig.RequestAttachments)
+        .items.select("FileLeafRef")
+        .filter(`IsDelete eq false`)
+        .get();
+
+      const spFileNames = existingSPFiles.map((file) => file.FileLeafRef);
+      console.log("spFileNames", spFileNames);
+
+      const duplicatesInSP = e.files.filter((newFile) =>
+        spFileNames.includes(newFile.name)
+      );
+      const totalDuplicates = [...duplicatesInSP];
+      const newFiles = e.files.filter(
+        (newFile) =>
+          !spFileNames.includes(newFile.name) &&
+          !files.some((existing) => existing.name === newFile.name)
+      );
+      console.log("totalDuplicates", totalDuplicates);
+      if (totalDuplicates.length > 0) {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Warning",
+          content: (prop) =>
+            toastNotify({
+              iconName: "pi-exclamation-triangle",
+              ClsName: "toast-imgcontainer-warning",
+              type: "Warning",
+              msg: `${totalDuplicates?.map((e) => e.name)?.join(", ")} file ${
+                totalDuplicates?.length > 1 ? "names" : "name"
+              } already exist!`,
+              image: require("../../../../../src/webparts/requestApproval/assets/giphy.gif"),
+            }),
+          life: 3000,
+        });
+      }
+
+      if (newFiles.length > 0) {
+        setFiles([...files, ...newFiles]);
+      }
+    } catch (error) {
+      console.error("Error in file selection:", error);
     }
   };
 
@@ -250,10 +393,30 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
     return (
       <div className="actionIcons">
         <div>
-          <i className="EditIcon pi pi-pencil"></i>
+          <i
+            className="EditIcon pi pi-pencil"
+            onClick={() => {
+              setUpdateItem(rowData);
+              setFormMode({ ...Config.FormModeConfig, edit: true });
+              setOpenRequestForm({
+                ...Config.DialogConfig,
+                RequestForm: true,
+              });
+            }}
+          ></i>
         </div>
         <div>
-          <i className="ViewIcon pi pi-eye"></i>
+          <i
+            className="ViewIcon pi pi-eye"
+            onClick={() => {
+              setUpdateItem(rowData);
+              setFormMode({ ...Config.FormModeConfig, view: true });
+              setOpenRequestForm({
+                ...Config.DialogConfig,
+                RequestForm: true,
+              });
+            }}
+          ></i>
         </div>
         <div>
           <i className="DeleteIcon pi pi-trash"></i>
@@ -356,7 +519,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
       if (action === "addStage") {
         addStage();
       } else if (action === "submit") {
-        addRequestDetails();
+        updateItem?.ID ? updateRequestDetails() : addRequestDetails();
       }
     }
   };
@@ -514,6 +677,26 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
     );
   };
 
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    console.log("Dropped files:", files);
+    // Upload logic here...
+  };
   return (
     <>
       <div>
@@ -560,7 +743,13 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
         </DataTable>
       </div>
       <Dialog
-        header="Add new request"
+        header={
+          formMode?.edit
+            ? "Edit request details"
+            : formMode?.view
+            ? "View request details"
+            : "Add new request"
+        }
         visible={openRequestForm?.RequestForm}
         style={{ width: "50vw" }}
         onHide={() => {
@@ -570,6 +759,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
           });
         }}
       >
+        <Toast ref={toast} />
         <div className={formStyles.dialogContentStyles}>
           <label className={formStyles.contentTitle}>BASIC DETAILS</label>
           <div className={formStyles.contentData}>
@@ -577,6 +767,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
               onChange={(e) => onChangeHandle("RequestID", e.target.value)}
               value={requestDetails?.RequestID}
               placeholder="Request Id"
+              disabled={true}
             />
             <Dropdown
               value={requestTypesChoice?.find(
@@ -586,6 +777,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
               options={requestTypesChoice}
               optionLabel="name"
               placeholder="Request type"
+              disabled={formMode?.view}
               className="w-full md:w-14rem"
             />
             <Dropdown
@@ -596,11 +788,13 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
               options={deparmentsChoice}
               optionLabel="name"
               placeholder="Departments"
+              disabled={formMode?.view}
               className="w-full md:w-14rem"
             />
             <InputText
               value={requestDetails?.Amount?.toString()}
               onChange={(e) => onChangeHandle("Amount", e.target.value)}
+              disabled={formMode?.view}
               placeholder="Amount"
               keyfilter="num"
             />
@@ -614,29 +808,103 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
               resize: "none",
             }}
             onChange={(e) => onChangeHandle("Notes", e.target.value)}
-            placeholder=""
+            placeholder="Enter any notes"
+            disabled={formMode?.view}
             value={requestDetails?.Notes}
             rows={5}
           />
-          <FileUpload
+          {/* <FileUpload
             name="demo[]"
             url={"/api/upload"}
             multiple
             chooseLabel="Browse"
             accept="image/*"
-            onSelect={(e) => console.log("file", e)}
+            disabled={formMode?.view}
+            onSelect={(e) =>
+              handleFileSelection(e, files, setFiles, toast, Config)
+            }
+            className={
+              formMode?.view ? "buttonbarNotVisible" : "buttonbarVisible"
+            }
+            onRemove={(e) => removeFile(e?.file?.name)}
             emptyTemplate={
               <p className="fileUploadEmptyMsg">
                 <div style={{ display: "flex", justifyContent: "center" }}>
+                  {formMode?.view ? (
+                    <img
+                      style={{ height: "35px", width: "35px" }}
+                      src={require("../../assets/error-file.png")}
+                    />
+                  ) : (
+                    <img
+                      style={{ height: "40px", width: "40px" }}
+                      src={require("../../assets/upload.png")}
+                    />
+                  )}
+                </div>
+                {formMode?.view
+                  ? "No files found"
+                  : "Click or drag file to this area to upload"}
+              </p>
+            }
+          /> */}
+          <>
+            <div
+              className={`${formStyles.file_upload_wrapper} 
+        }`}
+            >
+              <label
+                htmlFor="file-upload"
+                className={`${formStyles.file_upload_box}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <div className={formStyles.upload_icon}>
                   <img
                     style={{ height: "40px", width: "40px" }}
                     src={require("../../assets/upload.png")}
                   />
                 </div>
-                Click or drag file to this area to upload.
-              </p>
-            }
-          />
+
+                <p className={formStyles.upload_text}>
+                  Click or drag file to this area to upload
+                </p>
+
+                {/* <span className="upload_button">Browse</span> */}
+
+                <input
+                  id="file-upload"
+                  type="file"
+                  className={formStyles.file_input}
+                  onChange={(e) => {
+                    console.log("filejb", e);
+                    handleFileSelection(e.target, files, setFiles, toast, Config);
+                  }}
+                  multiple
+                />
+              </label>
+            </div>
+            <div className={formStyles.attchments_card_wrapper}>
+              {files?.map((attchment: any, index: number) => {
+                return (
+                  <div className={formStyles.card_wrapper} key={index}>
+                    <div className={formStyles.file_container}>
+                      {/* {getFileIcon(attchment.name)} */}
+                      <span className={formStyles.file_name}>
+                        {attchment?.name}
+                      </span>
+                    </div>
+                    <img
+                      style={{ height: "35px", width: "35px" }}
+                      src={require("../../assets/error-file.png")}
+                      // onClick={(e: any) => removeFile(e?.file?.name)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </>
           <div className={formStyles.appproversHeader}>
             <label className={formStyles.contentTitle}>Approvers</label>
           </div>
@@ -648,7 +916,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
                 <div className={`${formStyles.addStageButton}`}>
                   <Button
                     style={{ width: "100%", display: "flow" }}
-                    // visible={isEdit}
+                    visible={formMode?.edit || formMode?.add}
                     label="Add Stage"
                     onClick={() => {
                       validRequiredField("addStage");
@@ -669,7 +937,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
                       <Button
                         icon="pi pi-trash"
                         label="Remove"
-                        // visible={isEdit}
+                        visible={formMode?.edit || formMode?.add}
                         className="closeButton"
                         onClick={() => {
                           removeStage(
@@ -691,7 +959,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
                       groupName={""}
                       showtooltip={true}
                       tooltipMessage="Search and select persons here"
-                      // disabled={!isEdit}
+                      disabled={formMode?.view}
                       ensureUser={true}
                       defaultSelectedUsers={requestDetails?.ApprovalJson[0]?.stages[
                         requestDetails?.ApprovalJson[0]?.stages.findIndex(
@@ -718,7 +986,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
                     </Label>
                     <Dropdown
                       width={"100%"}
-                      // disabled={!isEdit}
+                      disabled={formMode?.view}
                       value={approvalType?.find(
                         (e) =>
                           e?.id ===
@@ -761,6 +1029,7 @@ const RequestForm = ({ context, setOpenRequestForm, openRequestForm }) => {
               }}
             />
             <Button
+              visible={formMode?.edit || formMode?.add}
               onClick={() => validRequiredField("submit")}
               label="Submit"
             />

@@ -9,6 +9,8 @@ import {
   ITabNames,
   IDialogPopUp,
   IApprovalFlowValidation,
+  ILibraryNames,
+  IFormMode,
 } from "./interface";
 
 export namespace Config {
@@ -17,7 +19,9 @@ export namespace Config {
     RequestDetails: "RequestDetails",
     ApprovalHistory: "ApprovalHistory",
   };
-
+  export const libraryNamesConfig: ILibraryNames = {
+    RequestAttachments: "RequestAttachments",
+  };
   //Dropdown config
   export const dropdownConfig: IDropdownDetails = {
     requestTypesChoice: [],
@@ -38,7 +42,7 @@ export namespace Config {
     ApprovalJson: [
       {
         Currentstage: 1,
-        TotalStages: 0,
+        TotalStages: 1,
         stages: [
           { stage: 1, approvalType: null, stageStatusCode: 0, approvers: [] },
         ],
@@ -79,5 +83,12 @@ export namespace Config {
   export const ApprovalFlowValidation: IApprovalFlowValidation = {
     stageValidation: "",
     stageErrIndex: [],
+  };
+
+  //Form mode config:
+  export const FormModeConfig: IFormMode = {
+    view: false,
+    edit: false,
+    add: false,
   };
 }

@@ -54,6 +54,18 @@ export interface IListNames {
   RequestDetails: string;
   ApprovalHistory: string;
 }
+//Library names
+export interface ILibraryNames {
+  RequestAttachments: string;
+}
+//Toast Message Details:
+export interface IToaster {
+  iconName: string;
+  ClsName: string;
+  type: "Warning" | "Success" | "Alert";
+  msg: string;
+  image?: string;
+}
 
 //Tab Names Interface:
 export interface ITabNames {
@@ -88,4 +100,11 @@ export interface IDialogPopUp {
 export interface IApprovalFlowValidation {
   stageValidation: string;
   stageErrIndex: number[];
+}
+
+//Form mode
+export interface IFormMode {
+  view: boolean;
+  edit: boolean;
+  add: boolean;
 }
