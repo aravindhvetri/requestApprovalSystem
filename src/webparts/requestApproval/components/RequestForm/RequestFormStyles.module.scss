@@ -74,6 +74,7 @@
   margin: 20px 0px 20px 0px;
 }
 
+
 .file_upload_wrapper {
   width: 100%;
   display: flex;
@@ -156,4 +157,8 @@
       }
     }
   }
+  
+.DialogDelIcon {
+  font-size: 18px;
+  color: var(--white);
 }

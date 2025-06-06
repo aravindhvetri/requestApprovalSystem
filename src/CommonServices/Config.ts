@@ -11,6 +11,7 @@ import {
   IApprovalFlowValidation,
   ILibraryNames,
   IFormMode,
+  IDelModal,
 } from "./interface";
 
 export namespace Config {
@@ -85,10 +86,17 @@ export namespace Config {
     stageErrIndex: [],
   };
 
+
   //Form mode config:
   export const FormModeConfig: IFormMode = {
     view: false,
     edit: false,
     add: false,
+  };
+
+  //Delete confirmation Details:
+  export const initialdelModal: IDelModal = {
+    isOpen: false,
+    id: null,
   };
 }

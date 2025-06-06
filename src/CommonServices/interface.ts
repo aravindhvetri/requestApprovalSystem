@@ -108,3 +108,9 @@ export interface IFormMode {
   edit: boolean;
   add: boolean;
 }
+
+//Delete Confirmation Interface
+export interface IDelModal {
+  isOpen: boolean;
+  id: number;
+}
