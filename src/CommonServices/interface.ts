@@ -8,11 +8,17 @@ export interface IDropdownDetails {
   deparmentsChoice: IBasicDropdown[];
   approvalType: IBasicDropdown[];
 }
-
+//Approval patch
+export interface IApprovalPatch {
+  status: string;
+  approvalJson: IApprovalFlow[];
+  comments: string;
+}
 //Request Details Interface:
 export interface IRequestDetails {
   ID: number;
   RequestID: string;
+  Created: string;
   RequestType: string;
   Department: string;
   Status: string;
@@ -93,6 +99,7 @@ export interface IApprovalHistory {
 //Dialog pop_up Interface:
 export interface IDialogPopUp {
   RequestForm: boolean;
+  ApprovalForm: boolean;
   ApprovalHistory: boolean;
 }
 

@@ -34,9 +34,13 @@ import {
   IRequestDetails,
   IStage,
   IStageApprover,
+  IApprovalPatch,
 } from "../../../../CommonServices/interface";
 import {
   deepClone,
+  downloadFile,
+  generateRequestID,
+  getFileIcon,
   multiplePeoplePickerTemplate,
   peoplePickerTemplate,
   statusTemplate,
@@ -45,6 +49,7 @@ import {
 import * as moment from "moment";
 import { sp, View } from "@pnp/sp/presets/all";
 import { Toast } from "primereact/toast";
+import ActionButtons from "../ActionButtons/ActionButtons";
 
 const RequestForm = ({
   context,
@@ -52,8 +57,10 @@ const RequestForm = ({
   openRequestForm,
   callToastNotify,
   formMode,
+  activeTab,
   setFormMode,
 }) => {
+  const loginUser = context._pageContext._user.email;
   //States:
   const serverRelativeUrl = context?._pageContext?._site?.serverRelativeUrl;
   const [requestDetailsDataTable, setRequestDetailsDataTable] = useState<
@@ -70,6 +77,11 @@ const RequestForm = ({
   );
   const [requestDetails, setRequestDetails] =
     useState<IPatchRequestDetails>(cloneRequestDetails);
+  const [userStatusUpdate, setUserStatusUpdate] = useState<IApprovalPatch>({
+    status: "",
+    approvalJson: [],
+    comments: "",
+  });
   const [approvalType, setApprovalType] = useState<IBasicDropdown[]>([
     ...Config.dropdownConfig.approvalType,
   ]);
@@ -80,17 +92,18 @@ const RequestForm = ({
   const [validation, setValidation] = useState<IApprovalFlowValidation>({
     ...Config.ApprovalFlowValidation,
   });
-  const toast = useRef(null);
+  const [alreadyExistingFiles, setAlreadyExistingFiles] = useState([]);
   const [files, setFiles] = useState([]);
   const [updateItem, setUpdateItem] = useState<IRequestDetails>({
     ...Config.RequestDetails,
   });
   const [isDragging, setIsDragging] = useState(false);
-  console.log("files", files);
   const [delModal, setDelModal] = useState<IDelModal>({
     ...Config.initialdelModal,
   });
-
+  //useref
+  const clearFiles = useRef(null);
+  const toast = useRef(null);
   //Initial Render:
   useEffect(() => {
     getRequestApprovalDetails();
@@ -109,10 +122,9 @@ const RequestForm = ({
           Notes: updateItem?.Description,
           ApprovalJson: updateItem?.ApprovalJson,
         });
+        LoadExistingFiles(updateItem?.ID);
       } else {
-        requestDetails["RequestID"] = `R-${requestDetailsDataTable?.length
-          .toString()
-          .padStart(4, "0")}`;
+        requestDetails["RequestID"] = generateRequestID(requestDetailsDataTable)
         setRequestDetails({ ...requestDetails });
       }
       setSelectedStage({
@@ -121,9 +133,15 @@ const RequestForm = ({
         approver: [],
       });
     } else if (!openRequestForm?.RequestForm) {
+      setFiles([]);
       setFormMode({ ...Config.FormModeConfig });
       setUpdateItem({ ...Config.RequestDetails });
       setRequestDetails(cloneRequestDetails);
+      setUserStatusUpdate({
+        status: "",
+        approvalJson: [],
+        comments: "",
+      });
       getRequestApprovalDetails();
     }
   }, [openRequestForm?.RequestForm]);
@@ -158,6 +176,7 @@ const RequestForm = ({
           tempRequestDetails.push({
             ID: item?.ID,
             RequestID: item?.RequestID,
+            Created: item?.Created,
             RequestType: item?.RequestType,
             Department: item?.Department,
             Status: item?.Status,
@@ -170,11 +189,19 @@ const RequestForm = ({
             IsDelete: item?.IsDelete,
           });
         });
-        setRequestDetailsDataTable([...tempRequestDetails]);
+        filterCondition(tempRequestDetails);
       })
       .catch((err) => {
         console.log("Error fetching request approval details:", err);
       });
+  };
+  //Filter Data
+  const filterCondition = (tempRequestDetails) => {
+    console.log("tempRequestDetails",tempRequestDetails)
+    const tempFilterValue: IRequestDetails[] = tempRequestDetails?.filter(
+      (res) => res?.Author?.email === loginUser
+    );
+    setRequestDetailsDataTable([...tempFilterValue]);
   };
 
   //Get Choices
@@ -198,6 +225,100 @@ const RequestForm = ({
     }
   };
 
+  //Get Attachments
+  const LoadExistingFiles = async (id) => {
+    const requestId = `${id}`;
+    sp.web.lists
+      .getByTitle(Config.libraryNamesConfig?.RequestAttachments)
+      .items.select(
+        "*,FileLeafRef,FileRef,FileDirRef,Author/ID,Author/Title,Author/EMail"
+      )
+      .filter(`RequestID eq '${requestId}' and IsDelete eq false`)
+      .expand("File,Author")
+      .orderBy("Modified", false)
+      .get()
+      .then((res: any) => {
+        let tempData = [];
+        if (res?.length) {
+          res?.forEach((val: any) => {
+            tempData.push({
+              id: val?.ID,
+              name: val?.File?.Name || "",
+              ulr: val?.File?.ServerRelativeUrl || "",
+              createdDate: val?.Created ? new Date(val?.Created) : null,
+              author: val?.Author,
+            });
+          });
+        }
+        setFiles([...tempData]);
+        setAlreadyExistingFiles([...tempData]);
+      })
+      .catch((err: any) => {
+        SPServices.ErrFunction("Get attachments err", err);
+      });
+  };
+  //Check attachments on library
+  const checkFiles = async () => {
+    let uploadFiles = files?.filter((e) => e?.objectURL);
+    let oldfiles = files?.filter((e) => e?.id)?.map((e) => e?.id);
+    let deletedFiles = alreadyExistingFiles?.filter(
+      (res) => !oldfiles.includes(res?.id)
+    );
+    if (uploadFiles.length > 0) {
+      await updateAttachments(uploadFiles);
+    }
+    if (deletedFiles.length > 0) {
+      await isDeleteFiles(deletedFiles);
+    }
+    setFiles([]);
+    setOpenRequestForm({
+      ...Config.DialogConfig,
+      RequestForm: false,
+    });
+    callToastNotify("updated");
+  };
+  //Add Datas From Attachment Library Requestors:
+  const updateAttachments = async (currentFiles) => {
+    try {
+      const folderPath = `${serverRelativeUrl}/${Config.libraryNamesConfig?.RequestAttachments}/Requestors`;
+      const requestId = `${updateItem?.ID}`;
+
+      for (const file of currentFiles) {
+        const fileBuffer = await file.arrayBuffer();
+        const uploadResult = await sp.web
+          .getFolderByServerRelativeUrl(folderPath)
+          .files.add(file.name, fileBuffer, true);
+
+        await uploadResult.file.listItemAllFields.get().then(async (item) => {
+          await sp.web.lists
+            .getByTitle(Config.libraryNamesConfig?.RequestAttachments)
+            .items.getById(item.Id)
+            .update({
+              RequestIDId: requestId,
+            });
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading files:", error);
+    }
+  };
+
+  //IsDelete Attachment files
+  const isDeleteFiles = async (currentFiles) => {
+    try {
+      for (const file of currentFiles) {
+        await sp.web.lists
+          .getByTitle(Config.libraryNamesConfig?.RequestAttachments)
+          .items.getById(file?.id)
+          .update({
+            IsDelete: true,
+          });
+      }
+    } catch (error) {
+      console.error("isDelete files err:", error);
+    }
+  };
+
   //Onchange handle:
   const onChangeHandle = (key, value) => {
     requestDetails[key] = value;
@@ -214,15 +335,12 @@ const RequestForm = ({
           Department: requestDetails?.Department,
           Amount: requestDetails?.Amount,
           Notes: requestDetails?.Notes,
-          ApprovalJson: JSON.stringify(requestDetails?.ApprovalJson),
+          Status: userStatusUpdate?.status,
+          ApprovalJson: JSON.stringify(userStatusUpdate?.approvalJson),
         },
         ID: updateItem?.ID,
       });
-      setOpenRequestForm({
-        ...Config.DialogConfig,
-        RequestForm: false,
-      });
-      callToastNotify("updated");
+      checkFiles();
     } catch {
       (err) => console.log("update request details err", err);
     }
@@ -249,7 +367,6 @@ const RequestForm = ({
 
   //Add Files in Library
   const addFiles = async (item) => {
-    console.log("item", item);
     try {
       const folderPath = `${serverRelativeUrl}/${Config.libraryNamesConfig?.RequestAttachments}/Requestors`;
       const requestId = `${item?.data?.ID}`;
@@ -260,7 +377,6 @@ const RequestForm = ({
           .getFolderByServerRelativeUrl(folderPath)
           .files.add(file.name, fileBuffer, true);
         await uploadResult.file.listItemAllFields.get().then(async (item) => {
-          console.log("item", item);
           try {
             await sp.web.lists
               .getByTitle(Config.libraryNamesConfig?.RequestAttachments)
@@ -294,12 +410,9 @@ const RequestForm = ({
       const existingSPFiles = await sp.web.lists
         .getByTitle(Config.libraryNamesConfig.RequestAttachments)
         .items.select("FileLeafRef")
-        .filter(`IsDelete eq false`)
         .get();
 
       const spFileNames = existingSPFiles.map((file) => file.FileLeafRef);
-      console.log("spFileNames", spFileNames);
-
       const duplicatesInSP = e.files.filter((newFile) =>
         spFileNames.includes(newFile.name)
       );
@@ -309,7 +422,6 @@ const RequestForm = ({
           !spFileNames.includes(newFile.name) &&
           !files.some((existing) => existing.name === newFile.name)
       );
-      console.log("totalDuplicates", totalDuplicates);
       if (totalDuplicates.length > 0) {
         toast.current?.show({
           severity: "warn",
@@ -321,7 +433,9 @@ const RequestForm = ({
               type: "Warning",
               msg: `${totalDuplicates?.map((e) => e.name)?.join(", ")} file ${
                 totalDuplicates?.length > 1 ? "names" : "name"
-              } already exist!`,
+              } already exist, Please rename the ${
+                totalDuplicates?.length > 1 ? "files" : "file"
+              } before uploading.`,
               image: require("../../../../../src/webparts/requestApproval/assets/giphy.gif"),
             }),
           life: 3000,
@@ -411,19 +525,21 @@ const RequestForm = ({
   const renderActionColumn = (rowData: IRequestDetails) => {
     return (
       <div className="actionIcons">
-        <div>
-          <i
-            className="EditIcon pi pi-pencil"
-            onClick={() => {
-              setUpdateItem(rowData);
-              setFormMode({ ...Config.FormModeConfig, edit: true });
-              setOpenRequestForm({
-                ...Config.DialogConfig,
-                RequestForm: true,
-              });
-            }}
-          ></i>
-        </div>
+        {rowData?.Status === "Rejected" && (
+          <div>
+            <i
+              className="EditIcon pi pi-pencil"
+              onClick={() => {
+                setUpdateItem(rowData);
+                setFormMode({ ...Config.FormModeConfig, edit: true });
+                setOpenRequestForm({
+                  ...Config.DialogConfig,
+                  RequestForm: true,
+                });
+              }}
+            ></i>
+          </div>
+        )}
         <div>
           <i
             className="ViewIcon pi pi-eye"
@@ -643,83 +759,58 @@ const RequestForm = ({
   //Stages data table
   const stagesDataTable = () => {
     return (
-      <DataTable
-        value={requestDetails?.ApprovalJson[0].stages}
-        selectionMode="single"
-        selection={selectedStage}
-        scrollable
-        scrollHeight="150px"
-        onSelectionChange={(e) => {
-          e.value && setSelectedStage(e.value);
-        }}
-        emptyMessage={<p style={{ textAlign: "center" }}>No Records Found</p>}
-      >
-        <Column
-          body={(rowData, row) => (
-            <>
-              <div
-                className="requestCardStage"
-                style={
-                  selectedStage?.["stage"] === rowData?.stage
-                    ? { backgroundColor: "#f3f3f3bd", borderColor: "#0000005c" }
-                    : {}
-                }
-              >
-                <div className="requestCardHeader">
-                  <div className="requestId">
-                    <h3 className="requestIdTitle">
-                      {`Stage ${rowData?.stage} approval`}
-                    </h3>
-                  </div>
-                  {rowData?.approvalType &&
-                    renderRejectionName(rowData?.approvalType)}
-                </div>
-                <div className="requestCardBody">
-                  {renderApproversColumn(rowData)}
-                </div>
+      <div className={formStyles.stagesTabelContainer}>
+        {requestDetails?.ApprovalJson[0].stages.map((stage) => (
+          <>
+            <div
+              style={
+                selectedStage?.["stage"] === stage?.stage
+                  ? { backgroundColor: "#f3f3f3bd", borderColor: "#0000005c" }
+                  : {}
+              }
+              onClick={() => setSelectedStage(stage)}
+              className={formStyles.stageContainer}
+            >
+              <div className={formStyles.stageIcon}>
+                {" "}
+                <img
+                  style={{ height: "25px", width: "25px" }}
+                  src={require("../../assets/teamwork.png")}
+                />
               </div>
-              <div style={{ marginBottom: "10px" }}>
-                {validation?.stageErrIndex.some(
-                  (e) =>
-                    e ===
-                    requestDetails?.ApprovalJson[0]?.stages.findIndex(
-                      (res) => res.stage === rowData?.stage
-                    )
-                ) && (
-                  <div>
-                    <span className="errorMsg">
-                      {validation?.stageValidation}
-                    </span>
-                  </div>
-                )}
+              <div className={formStyles.stageDetails}>
+                <h3 className={formStyles.stageTitle}>
+                  {`Stage ${stage?.stage} approval`}
+                </h3>
+                {stage?.approvalType &&
+                  renderRejectionName(stage?.approvalType)}
               </div>
-            </>
-          )}
-        />
-      </DataTable>
+
+              <div className={formStyles.approversContainer}>
+                {renderApproversColumn(stage)}
+              </div>
+            </div>
+            <div>
+              {validation?.stageErrIndex.some(
+                (e) =>
+                  e ===
+                  requestDetails?.ApprovalJson[0]?.stages.findIndex(
+                    (res) => res.stage === stage?.stage
+                  )
+              ) && (
+                <div>
+                  <span className="errorMsg">
+                    {validation?.stageValidation}
+                  </span>
+                </div>
+              )}
+            </div>
+          </>
+        ))}
+      </div>
     );
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    const files = e.dataTransfer.files;
-    console.log("Dropped files:", files);
-    // Upload logic here...
-  };
   return (
     <>
       <div>
@@ -836,98 +927,79 @@ const RequestForm = ({
             value={requestDetails?.Notes}
             rows={5}
           />
-          {/* <FileUpload
-            name="demo[]"
-            url={"/api/upload"}
-            multiple
-            chooseLabel="Browse"
-            accept="image/*"
-            disabled={formMode?.view}
-            onSelect={(e) =>
-              handleFileSelection(e, files, setFiles, toast, Config)
-            }
-            className={
-              formMode?.view ? "buttonbarNotVisible" : "buttonbarVisible"
-            }
-            onRemove={(e) => removeFile(e?.file?.name)}
-            emptyTemplate={
-              <p className="fileUploadEmptyMsg">
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                  {formMode?.view ? (
-                    <img
-                      style={{ height: "35px", width: "35px" }}
-                      src={require("../../assets/error-file.png")}
-                    />
-                  ) : (
-                    <img
-                      style={{ height: "40px", width: "40px" }}
-                      src={require("../../assets/upload.png")}
-                    />
-                  )}
-                </div>
-                {formMode?.view
-                  ? "No files found"
-                  : "Click or drag file to this area to upload"}
-              </p>
-            }
-          /> */}
-          <>
-            <div
-              className={`${formStyles.file_upload_wrapper} 
-        }`}
-            >
-              <label
-                htmlFor="file-upload"
-                className={`${formStyles.file_upload_box}`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <div className={formStyles.upload_icon}>
-                  <img
-                    style={{ height: "40px", width: "40px" }}
-                    src={require("../../assets/upload.png")}
-                  />
-                </div>
-
-                <p className={formStyles.upload_text}>
-                  Click or drag file to this area to upload
-                </p>
-
-                {/* <span className="upload_button">Browse</span> */}
-
-                <input
-                  id="file-upload"
-                  type="file"
-                  className={formStyles.file_input}
-                  onChange={(e) => {
-                    console.log("filejb", e);
-                    handleFileSelection(e.target, files, setFiles, toast, Config);
-                  }}
-                  multiple
-                />
-              </label>
-            </div>
-            <div className={formStyles.attchments_card_wrapper}>
-              {files?.map((attchment: any, index: number) => {
-                return (
-                  <div className={formStyles.card_wrapper} key={index}>
-                    <div className={formStyles.file_container}>
-                      {/* {getFileIcon(attchment.name)} */}
-                      <span className={formStyles.file_name}>
-                        {attchment?.name}
-                      </span>
-                    </div>
-                    <img
-                      style={{ height: "35px", width: "35px" }}
-                      src={require("../../assets/error-file.png")}
-                      // onClick={(e: any) => removeFile(e?.file?.name)}
-                    />
+          {!formMode?.view && (
+            <FileUpload
+              name="demo[]"
+              url={"/api/upload"}
+              multiple
+              ref={clearFiles}
+              chooseLabel="Browse"
+              onSelect={(e) => {
+                handleFileSelection(e, files, setFiles, toast, Config);
+                clearFiles.current.clear();
+              }}
+              className={
+                formMode?.view ? "buttonbarNotVisible" : "buttonbarVisible"
+              }
+              onRemove={(e) => removeFile(e?.file?.name)}
+              emptyTemplate={
+                <p className="fileUploadEmptyMsg">
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    {formMode?.view ? (
+                      <img
+                        style={{ height: "35px", width: "35px" }}
+                        src={require("../../assets/error-file.png")}
+                      />
+                    ) : (
+                      <img
+                        style={{ height: "40px", width: "40px" }}
+                        src={require("../../assets/upload.png")}
+                      />
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          </>
+                  {formMode?.view
+                    ? "No files found"
+                    : "Click or drag file to this area to upload"}
+                </p>
+              }
+            />
+          )}
+          <div className={formStyles.attachmentsContainer}>
+            {files?.map((file) => (
+              <div className={formStyles.fileContainer}>
+                <div className={formStyles.fileIcon}>
+                  {getFileIcon(file?.name)}
+                </div>
+                <div className={formStyles.fileDetails}>
+                  <Label
+                    style={{ cursor: "pointer" }}
+                    className={`tooltip ${formStyles.label}`}
+                    onClick={() =>
+                      file?.ulr
+                        ? downloadFile(file?.ulr)
+                        : downloadFile(file?.objectURL)
+                    }
+                  >
+                    {file?.name.length > 20
+                      ? `${file?.name.slice(0, 20)}....`
+                      : file?.name}
+                    <span className="tooltiptext">{file?.name}</span>
+                  </Label>
+                </div>
+                {!formMode?.view &&
+                  (file?.objectURL || file?.author?.EMail === loginUser) && (
+                    <div className={formStyles.cancelIcon}>
+                      <img
+                        onClick={() => removeFile(file?.name)}
+                        className={formStyles.cancelImg}
+                        src={require("../../assets/close.png")}
+                      />
+                    </div>
+                  )}
+              </div>
+            ))}
+          </div>
+
           <div className={formStyles.appproversHeader}>
             <label className={formStyles.contentTitle}>Approvers</label>
           </div>
@@ -1039,24 +1111,17 @@ const RequestForm = ({
               </div>
             </div>
           </div>
-
-          <div className={formStyles.buttonsContainer}>
-            <Button
-              className="closeButton"
-              label="Close"
-              onClick={() => {
-                setOpenRequestForm({
-                  ...Config.DialogConfig,
-                  RequestForm: false,
-                });
-              }}
-            />
-            <Button
-              visible={formMode?.edit || formMode?.add}
-              onClick={() => validRequiredField("submit")}
-              label="Submit"
-            />
-          </div>
+          <ActionButtons
+            setOpenRequestForm={setOpenRequestForm}
+            validRequiredField={validRequiredField}
+            formMode={formMode}
+            updateFilesbyApprovalForm={""}
+            context={context}
+            setUserStatusUpdate={setUserStatusUpdate}
+            activeTab={activeTab}
+            userStatusUpdate={userStatusUpdate}
+            currentRecord={updateItem}
+          />
         </div>
       </Dialog>
       <Dialog

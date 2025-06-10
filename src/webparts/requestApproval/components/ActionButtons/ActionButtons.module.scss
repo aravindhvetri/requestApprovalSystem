@@ -1,0 +1,17 @@
+@import "../../../../External/commonStyle.module.scss";
+.buttonContainer {
+  display: flex;
+  gap: 2%;
+  margin-top: 10px;
+  width: 100%;
+  align-items: center;
+  justify-content: end;
+}
+.contentTitle {
+  font-size: $fontSizeSmall;
+  color: $darkGrey;
+  border-bottom: 1px solid $darkGrey;
+  width: fit-content;
+  font-weight: 500;
+  height: fit-content;
+}

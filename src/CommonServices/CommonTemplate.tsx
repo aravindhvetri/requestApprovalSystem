@@ -3,7 +3,12 @@ import * as React from "react";
 //Styles Imports:
 import CommonStyles from "../External/commonStyle.module.scss";
 //Common Service Imports:
-import { IPeoplePickerDetails, IToaster } from "./interface";
+import {
+  IPatchRequestDetails,
+  IPeoplePickerDetails,
+  IRequestDetails,
+  IToaster,
+} from "./interface";
 //Fluent UI Imports:
 import {
   DirectionalHint,
@@ -238,24 +243,90 @@ export const toastNotify = (item: IToaster) => {
 };
 
 //Get File icon
-// export const getFileIcon = (name: string) => {
-//   const extension = name.split(".").pop()?.toLowerCase();
-//   switch (extension) {
-//     case "pdf":
-//       return <PictureAsPdfIcon style={{ color: "red" }} />;
-//     case "doc":
-//     case "docx":
-//       return <DescriptionIcon style={{ color: "blue" }} />;
-//     case "xls":
-//     case "xlsx":
-//       return <DescriptionIcon style={{ color: "green" }} />;
-//     case "png":
-//     case "jpg":
-//     case "jpeg":
-//       return <ImageIcon style={{ color: "orange" }} />;
-//     case "txt":
-//       return <InsertDriveFileIcon style={{ color: "gray" }} />;
-//     default:
-//       return <InsertDriveFileIcon />;
-//   }
-// };
+export const getFileIcon = (name: string) => {
+  const extension = name.split(".").pop()?.toLowerCase();
+  switch (extension) {
+    case "pdf":
+      return (
+        <img
+          style={{ width: "20px", height: "20px" }}
+          src={require("../webparts/requestApproval/assets/pdfIcon.png")}
+        />
+      );
+    case "doc":
+    case "docx":
+      return (
+        <img
+          style={{ width: "20px", height: "20px" }}
+          src={require("../webparts/requestApproval/assets/docIcon.png")}
+        />
+      );
+    case "xls":
+    case "xlsx":
+      return (
+        <img
+          style={{ width: "20px", height: "20px" }}
+          src={require("../webparts/requestApproval/assets/excelIcon.png")}
+        />
+      );
+    case "png":
+    case "jpg":
+    case "jpeg":
+      return (
+        <img
+          style={{ width: "20px", height: "20px" }}
+          src={require("../webparts/requestApproval/assets/imgIcon.png")}
+        />
+      );
+    case "txt":
+      return (
+        <img
+          style={{ width: "20px", height: "20px" }}
+          src={require("../webparts/requestApproval/assets/txtIcon.png")}
+        />
+      );
+    case "xml":
+      return (
+        <img
+          style={{ width: "20px", height: "20px" }}
+          src={require("../webparts/requestApproval/assets/xmlIcon.png")}
+        />
+      );
+    case "ppt":
+      return (
+        <img
+          style={{ width: "20px", height: "20px" }}
+          src={require("../webparts/requestApproval/assets/pptIcon.png")}
+        />
+      );
+    default:
+      return (
+        <img
+          style={{ width: "20px", height: "20px" }}
+          src={require("../webparts/requestApproval/assets/fileIcon.png")}
+        />
+      );
+  }
+};
+
+//DownLoad File Function:
+export const downloadFile = (url) => {
+  const anchortag = document.createElement("a");
+  anchortag.setAttribute("href", url);
+  anchortag.setAttribute("target", "_blank");
+  // anchortag.setAttribute("download", ""); // for download file
+  anchortag.click();
+  anchortag.remove();
+};
+
+//RequestId generator
+export const generateRequestID = (tableData: IRequestDetails[]) => {
+  const sortRec = tableData?.sort((a, b) => b.ID - a.ID);
+  const tempArr = sortRec[0]?.RequestID.split("-");
+  if (sortRec.length > 0) {
+    const lastReqID = Number(tempArr[tempArr?.length - 1]);
+    return `R-${(lastReqID + 1).toString().padStart(4, "0")}`;
+  } else {
+    return "R-0001";
+  }
+};

@@ -1,1 +1,93 @@
 @import "../../../../External/commonStyle.module.scss";
+.dialogContentStyles {
+  width: 100%;
+  height: 100%;
+  padding: 5px 0px;
+  display: grid;
+  .requestDetailsContainer {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid var(--liteGreyBackground);
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    .requestID {
+      width: 100%;
+      display: flex;
+      height: 50%;
+      gap: 2%;
+      align-items: center;
+      .label {
+        font-size: var(--fontSizeMedium);
+        color: black;
+        font-weight: 400;
+      }
+    }
+    .requestDetails {
+      display: flex;
+      align-items: center;
+      height: 50%;
+      width: 100%;
+      margin-top: 8px;
+      justify-content: space-between;
+      .label {
+        font-size: var(--fontSizeSmall);
+        color: var(--darkGrey);
+      }
+    }
+  }
+  .contentTitle {
+    font-size: $fontSizeSmall;
+    color: $darkGrey;
+    border-bottom: 1px solid $darkGrey;
+    width: fit-content;
+    font-weight: 500;
+    height: fit-content;
+    padding: 0;
+  }
+  // Attachment container styles...........
+  .attachmentsContainer {
+    margin: 10px 0;
+    display: flex;
+    flex-wrap: wrap;
+    .fileContainer {
+      display: flex;
+      box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+      align-items: center;
+      padding: 5px;
+      margin: 3px;
+      width: 32%;
+      border: 1px solid $liteGreyBackground;
+      border-radius: 5px;
+    }
+    .fileIcon {
+      width: 20%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fileDetails {
+      display: flex;
+      width: 60%;
+      .label {
+        font-size: 12px;
+        color: #202735;
+        padding: 0;
+      }
+    }
+    .cancelIcon {
+      width: 20%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .cancelImg {
+        height: 15px;
+        cursor: pointer;
+        width: 15px;
+      }
+    }
+  }
+}

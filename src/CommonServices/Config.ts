@@ -54,6 +54,7 @@ export namespace Config {
   export const RequestDetails: IRequestDetails = {
     ID: null,
     RequestID: "",
+    Created: "",
     RequestType: "",
     Department: "",
     Status: "",
@@ -77,6 +78,7 @@ export namespace Config {
   //Dialog pop_up Configurations:
   export const DialogConfig: IDialogPopUp = {
     RequestForm: false,
+    ApprovalForm: false,
     ApprovalHistory: false,
   };
 
@@ -85,7 +87,6 @@ export namespace Config {
     stageValidation: "",
     stageErrIndex: [],
   };
-
 
   //Form mode config:
   export const FormModeConfig: IFormMode = {

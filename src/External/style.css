@@ -218,6 +218,26 @@ div[data-automationid="SiteHeader"] {
   font-size: var(--fontSizeMedium);
   padding: 6px;
 }
+.approveButton {
+  margin: 0 !important;
+  color: var(--white);
+  background-color: var(--green);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: var(--fontSizeMedium);
+  padding: 6px;
+}
+.rejectButton {
+  margin: 0 !important;
+  color: var(--white);
+  background-color: var(--red);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: var(--fontSizeMedium);
+  padding: 6px;
+}
 
 /*Data Table Common styles........... */
 .p-datatable .p-datatable-thead > tr > th {
@@ -417,7 +437,6 @@ div[data-automationid="SiteHeader"] {
   color: black;
 }
 
-
 /*Delete Confirmation popup styles......................................... */
 .modal-template .p-dialog-header {
   padding: 10px 0px;
@@ -515,9 +534,33 @@ div[data-automationid="SiteHeader"] {
 .submit-btn .pi-plus:before {
   font-size: 0.75rem;
 }
+/* Dialog popup styles................ */
 .p-dialog .p-dialog-header {
   border-bottom: 1px solid transparent;
 }
 .p-dialog {
   border: 1px solid transparent;
+}
+
+/* Tooltip styles......... */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background-color: var(--darkGrey);
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -60px;
+}
+.tooltip:hover .tooltiptext {
+  visibility: visible;
 }

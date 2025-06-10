@@ -102,6 +102,7 @@ const HeaderComponent = ({ context }) => {
             <RequestForm
               context={context}
               openRequestForm={openRequestForm}
+              activeTab={activeTab}
               formMode={formMode}
               setFormMode={setFormMode}
               setOpenRequestForm={setOpenRequestForm}
@@ -111,7 +112,13 @@ const HeaderComponent = ({ context }) => {
         ) : (
           <>
             {activeTab == `${Config.TabNames?.Approval}` ? (
-              <MyApproval context={context} />
+              <MyApproval
+                openRequestForm={openRequestForm}
+                setOpenRequestForm={setOpenRequestForm}
+                activeTab={activeTab}
+                callToastNotify={callToastNotify}
+                context={context}
+              />
             ) : (
               ""
             )}
