@@ -74,3 +74,7 @@ $backgroundTranspanrent: #26262685;
   font-size: $fontSizeSmall;
   color: $black;
 }
+@mixin commonSubLabel {
+  font-size: 10px;
+  color: $darkGrey;
+}

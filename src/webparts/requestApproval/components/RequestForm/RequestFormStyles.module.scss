@@ -36,6 +36,11 @@
 
 .label {
   @include commonLabel;
+  padding: 0;
+}
+.sublabel {
+  @include commonSubLabel;
+  padding: 5px 0;
 }
 .approvalConfigContainer {
   padding: 10px 0px 0px 0px;
@@ -52,10 +57,11 @@
       width: 60%;
       height: fit-content;
       .stageFormContainer {
+        margin-top: 5px;
         width: 100%;
         border: 1px solid var(--borderColor);
         border-radius: 6px;
-        padding: 20px;
+        padding: 10px;
         .stageConfigHeader {
           @include commonLabel;
           font-weight: 500;
@@ -74,91 +80,92 @@
   margin: 20px 0px 20px 0px;
 }
 
-.file_upload_wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 0px 20px;
-}
-
-.file_upload_box {
-  width: 100%;
-  // max-width: 600px;
-  border: 2px dotted var(--input-fields-border-color);
-  border-radius: 1rem;
-  background: #fff;
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  position: relative;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: var(--input-fields-bg-hovor-color);
-  }
-
-  &.dragging {
-    background-color: #eef3ff;
-    border-color: #3f51b5;
-  }
-  .upload_icon {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  .upload_text {
-    font-size: 14px;
-    color: #666;
-    margin: 0px;
-  }
-  .file_input {
-    display: none;
-  }
-}
-.sectionError {
-  .file_upload_box {
-    border: 2px dotted #ff000038 !important;
-    background: #e4c5c52e !important;
-  }
-}
-
-.attchments_card_wrapper {
-  display: "flex";
-  flex-wrap: wrap;
-  min-height: 1px;
-  max-height: 151px;
-  overflow-y: "auto";
-  gap: 10px;
+// Attachment container styles...........
+.attachmentsContainer {
   margin-top: 10px;
-  .card_wrapper {
-    display: "flex";
-    width: 49%;
-    align-items: "center";
-    justify-content: "space-between";
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 8px;
-    background: #f9f9f9;
-    overflow: "hidden";
-    white-space: "nowrap";
-    text-overflow: "ellipsis";
-    .file_container {
-      display: "flex";
-      align-items: "center";
-      gap: 8px;
-      overflow: "hidden";
-      .file_name {
-        overflow: "hidden";
-        text-overflow: "ellipsis";
-        font-size: 13px;
-      }
+  display: flex;
+  flex-wrap: wrap;
+  .fileContainer {
+    display: flex;
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+    align-items: center;
+    padding: 5px;
+    margin: 3px;
+    width: 32%;
+    border: 1px solid $liteGreyBackground;
+    border-radius: 5px;
+  }
+  .fileIcon {
+    width: 20%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fileDetails {
+    display: flex;
+    width: 60%;
+  }
+  .cancelIcon {
+    width: 20%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .cancelImg {
+      height: 15px;
+      cursor: pointer;
+      width: 15px;
     }
   }
 }
-
 .DialogDelIcon {
   font-size: 18px;
   color: var(--white);
+}
+
+//Stages Table Design
+.stagesTabelContainer {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: transparent !important;
+  color: black !important;
+  max-height: 170px;
+  overflow: auto;
+  .stageContainer {
+    width: 100%;
+    display: flex;
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+    align-items: center;
+    padding: 5px;
+    border: 1px solid $liteGreyBackground;
+    border-radius: 5px;
+    margin-top: 5px;
+    cursor: pointer;
+    .stageIcon {
+      width: 10%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .stageDetails {
+      display: flex;
+      flex-wrap: wrap;
+      width: 60%;
+      .stageTitle {
+        font-size: var(--fontSizeSmall);
+        margin: 0;
+      }
+    }
+    .approversContainer {
+      width: 30%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: end;
+      font-size: var(--fontSizeSmall);
+      padding-right: 10px;
+    }
+  }
 }

@@ -1,48 +1,15 @@
 /* Stage data table design........................ */
-.stageTable .requestCardStage {
-  background-color: #fff;
-  border-radius: 6px;
-  padding: 5px;
-  border: 1px solid var(--borderColor);
-  display: flex;
-  width: 100%;
-}
-.stageTable .categoryName {
-  padding-top: 0px;
-  background-color: var(--darkGrey);
-  margin-top: 10px;
-  padding: 2px;
-}
-.stageTable .requestIdTitle {
-  font-size: var(--fontSizeSmall) !important;
-  margin: 0 !important;
-}
 .stageTable .categoryNameTag {
   font-size: 11px;
   color: var(--white);
+  background-color: var(--darkGrey);
+  padding: 2px;
+  margin-top: 5px;
 }
-.stageTable .requestCardBody {
-  width: 50%;
-  padding-right: 0px;
-  display: flex;
-  justify-content: end;
-  align-items: center;
-}
-.stageTable .p-datatable .p-datatable-tbody > tr.p-highlight {
-  background-color: transparent !important;
-  color: black !important;
-}
-.stageTable .p-datatable .p-datatable-tbody > tr:hover {
-  background-color: transparent !important;
-}
-.stageTable .p-datatable .p-datatable-thead > tr > th {
-  display: none;
-}
-.stageTable .p-datatable .p-datatable-tbody > tr > td {
-  padding: 0 !important;
-}
-
 /* Dropdown styles.............. */
+.approvalTypeStyle {
+  margin-top: 10px;
+}
 .approvalTypeStyle .p-dropdown {
   width: 100%;
 }
