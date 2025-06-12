@@ -9,11 +9,12 @@ import {
   IRequestDetails,
 } from "../../../../CommonServices/interface";
 import {
-  downloadFile,
+  viewFiles,
   getFileIcon,
   peoplePickerTemplate,
   statusTemplate,
   toastNotify,
+  DownloadFiles,
 } from "../../../../CommonServices/CommonTemplate";
 //PrimeReact Imports:
 import { DataTable } from "primereact/datatable";
@@ -29,10 +30,12 @@ import ActionButtons from "../ActionButtons/ActionButtons";
 import { Label } from "office-ui-fabric-react";
 import { FileUpload } from "primereact/fileupload";
 import { sp } from "@pnp/sp/presets/all";
+import Loader from "../Loader";
 
 const MyApproval = ({
   openRequestForm,
   setOpenRequestForm,
+  filterSelected,
   activeTab,
   callToastNotify,
   context,
@@ -50,13 +53,18 @@ const MyApproval = ({
     view: false,
   });
   const [alreadyExistingFiles, setAlreadyExistingFiles] = useState([]);
+  const [showLoader, setShowLoader] = useState<boolean>(false);
+  const [showLoaderinForm, setShowLoaderinForm] = useState<boolean>(false);
   const toast = useRef(null);
   const clearFiles = useRef(null);
   console.log("files", files);
   //Initial Render:
   useEffect(() => {
+    if (requestDetails.length === 0) {
+      setShowLoader(true);
+    }
     getRequestApprovalDetails();
-  }, []);
+  }, [filterSelected]);
   useEffect(() => {
     if (openRequestForm?.ApprovalForm) {
       if (requestDetailsObj?.ID) {
@@ -116,7 +124,7 @@ const MyApproval = ({
       });
   };
   //Filter records for approvers
-  const filterRecords = (tempArr) => {
+  const filterRecords = async (tempArr) => {
     const filterTempArr = tempArr.filter((item) =>
       item.ApprovalJson[0]?.stages?.some(
         (stage) =>
@@ -124,7 +132,31 @@ const MyApproval = ({
           stage.approvers.some((approver) => approver.email === loginUser)
       )
     );
-    setRequestDetails([...filterTempArr]);
+    const finalFilterData = filterTempArr.filter(
+      (res) =>
+        (filterSelected?.requestSelected
+          ? filterSelected?.requestSelected === res?.RequestType
+          : true) &&
+        (filterSelected?.statusSelected
+          ? filterSelected?.statusSelected === res?.Status
+          : true) &&
+        (filterSelected?.departmentSelected
+          ? filterSelected?.departmentSelected === res?.Department
+          : true) &&
+        (filterSelected?.globalSearchValue
+          ? res?.RequestID.toLowerCase().includes(
+              filterSelected?.globalSearchValue.toLowerCase()
+            ) ||
+            res?.Author?.name
+              .toLowerCase()
+              .includes(filterSelected?.globalSearchValue.toLowerCase()) ||
+            res?.Author?.email
+              .toLowerCase()
+              .includes(filterSelected?.globalSearchValue.toLowerCase())
+          : true)
+    );
+    await setRequestDetails([...finalFilterData]);
+    setShowLoader(false);
   };
   //Render Author Column:
   const renderAuthorColumn = (rowData: IRequestDetails) => {
@@ -155,19 +187,24 @@ const MyApproval = ({
   const renderActionColumn = (rowData: IRequestDetails) => {
     return (
       <div className="actionIcons">
-        <div>
-          <i
-            className="EditIcon pi pi-pencil"
-            onClick={async () => {
-              await currentData(rowData);
-              setApprovalFormMode({ edit: true, view: false });
-              setOpenRequestForm({
-                ...Config.DialogConfig,
-                ApprovalForm: true,
-              });
-            }}
-          ></i>
-        </div>
+        {(rowData?.Status === "Pending" || rowData?.Status === "Resubmited") &&
+          rowData?.ApprovalJson[0].stages
+            .find((e) => e.stage === rowData.ApprovalJson[0].Currentstage)
+            .approvers.find((e) => e.email === loginUser)?.statusCode === 0 && (
+            <div>
+              <i
+                className="EditIcon pi pi-pencil"
+                onClick={async () => {
+                  await currentData(rowData);
+                  setApprovalFormMode({ edit: true, view: false });
+                  setOpenRequestForm({
+                    ...Config.DialogConfig,
+                    ApprovalForm: true,
+                  });
+                }}
+              ></i>
+            </div>
+          )}
         <div>
           <i
             className="ViewIcon pi pi-eye"
@@ -294,6 +331,7 @@ const MyApproval = ({
       ...Config.DialogConfig,
       RequestForm: false,
     });
+    setShowLoaderinForm(false);
     callToastNotify("updated");
   };
   //Add Datas From Attachment Library Requestors:
@@ -340,6 +378,7 @@ const MyApproval = ({
   return (
     <>
       <div>
+        <Loader showLoader={showLoader} />
         <DataTable
           paginator
           rows={5}
@@ -392,8 +431,8 @@ const MyApproval = ({
                 {statusTemplate(requestDetailsObj?.Status)}
               </div>
               <div className={MyApprovalStyles.requestDetails}>
-                <Label className={MyApprovalStyles.label}>
-                  {`User - ${peoplePickerTemplate(requestDetailsObj?.Author)}`}
+                <Label className={MyApprovalStyles.userLabel}>
+                  User - {renderAuthorColumn(requestDetailsObj)}
                 </Label>
                 <Label className={MyApprovalStyles.label}>{`Date - ${formatDate(
                   requestDetailsObj?.Created
@@ -460,8 +499,8 @@ const MyApproval = ({
                       className={`tooltip ${MyApprovalStyles.label}`}
                       onClick={() =>
                         file?.ulr
-                          ? downloadFile(file?.ulr)
-                          : downloadFile(file?.objectURL)
+                          ? viewFiles(file?.ulr)
+                          : viewFiles(file?.objectURL)
                       }
                     >
                       {file?.name.length > 20
@@ -470,20 +509,32 @@ const MyApproval = ({
                       <span className="tooltiptext">{file?.name}</span>
                     </Label>
                   </div>
-                  {!approvalFormMode?.view &&
-                    (file?.objectURL || file?.author?.EMail === loginUser) && (
-                      <div className={MyApprovalStyles.cancelIcon}>
+                  <div className={MyApprovalStyles.cancelIcon}>
+                    <img
+                      onClick={() =>
+                        file?.ulr
+                          ? DownloadFiles(file?.ulr)
+                          : DownloadFiles(file?.objectURL)
+                      }
+                      className={MyApprovalStyles.cancelImg}
+                      src={require("../../assets/downloading.png")}
+                    />
+                    {!approvalFormMode?.view &&
+                      (file?.objectURL ||
+                        file?.author?.EMail === loginUser) && (
                         <img
                           onClick={() => removeFile(file?.name)}
                           className={MyApprovalStyles.cancelImg}
                           src={require("../../assets/close.png")}
                         />
-                      </div>
-                    )}
+                      )}
+                  </div>
                 </div>
               ))}
             </div>
             <ActionButtons
+              showLoaderinForm={showLoaderinForm}
+              setShowLoaderinForm={setShowLoaderinForm}
               setOpenRequestForm={setOpenRequestForm}
               validRequiredField={""}
               updateFilesbyApprovalForm={checkFiles}

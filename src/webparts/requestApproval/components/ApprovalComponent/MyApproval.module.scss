@@ -35,6 +35,13 @@
         font-size: var(--fontSizeSmall);
         color: var(--darkGrey);
       }
+      .userLabel {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: var(--fontSizeSmall);
+        color: var(--darkGrey);
+      }
     }
   }
   .contentTitle {
@@ -81,6 +88,7 @@
       width: 20%;
       height: 100%;
       display: flex;
+      gap: 10%;
       align-items: center;
       justify-content: center;
       .cancelImg {

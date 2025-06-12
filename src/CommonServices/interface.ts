@@ -7,6 +7,14 @@ export interface IDropdownDetails {
   requestTypesChoice: IBasicDropdown[];
   deparmentsChoice: IBasicDropdown[];
   approvalType: IBasicDropdown[];
+  StatusChoices: IBasicDropdown[];
+}
+//Filter interface
+export interface IFilterSelected {
+  requestSelected: string;
+  statusSelected: string;
+  departmentSelected: string;
+  globalSearchValue: string;
 }
 //Approval patch
 export interface IApprovalPatch {

@@ -12,6 +12,7 @@ import {
   ILibraryNames,
   IFormMode,
   IDelModal,
+  IFilterSelected,
 } from "./interface";
 
 export namespace Config {
@@ -31,8 +32,15 @@ export namespace Config {
       { name: "Everyone should approve", id: 2 },
       { name: "Anyone can approve", id: 1 },
     ],
+    StatusChoices: [],
   };
-
+  //Filters config
+  export const filterSelectedConfig: IFilterSelected = {
+    requestSelected: "",
+    statusSelected: "",
+    departmentSelected: "",
+    globalSearchValue: "",
+  };
   //Request Details Config
   export const requestDetailsConfig: IPatchRequestDetails = {
     RequestID: "",
