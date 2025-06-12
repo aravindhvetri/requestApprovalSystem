@@ -37,8 +37,14 @@
   .headerFilters {
     display: flex;
     align-items: center;
-    justify-content: right;
+    justify-content: space-between;
     width: 100%;
-    padding-bottom: 20px;
+    padding-bottom: 10px;
+    .filtersBar {
+      display: flex;
+      gap: 2%;
+      align-items: center;
+      height: 100%;
+    }
   }
 }

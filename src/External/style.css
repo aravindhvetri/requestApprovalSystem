@@ -293,7 +293,7 @@ div[data-automationid="SiteHeader"] {
 .tab-container {
   display: flex;
   align-items: center;
-  margin: 20px 0px 20px 0px;
+  margin: 10px 0px;
 }
 .tab-container .p-button:focus {
   box-shadow: none;
@@ -554,6 +554,7 @@ div[data-automationid="SiteHeader"] {
   text-align: center;
   border-radius: 6px;
   padding: 5px;
+  width: -webkit-fill-available;
   /* Position the tooltip */
   position: absolute;
   z-index: 1;
@@ -563,4 +564,75 @@ div[data-automationid="SiteHeader"] {
 }
 .tooltip:hover .tooltiptext {
   visibility: visible;
+}
+/* Loader style............... */
+.loader-container {
+  position: fixed; /* Keeps the spinner centered */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000; /* Ensures it's above other elements */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: rgb(42 41 41 / 36%);
+}
+.loader {
+  width: 48px;
+  height: 48px;
+  margin: auto;
+  position: relative;
+}
+.loader:before {
+  content: "";
+  width: 48px;
+  height: 5px;
+  background: #000000;
+  opacity: 0.25;
+  position: absolute;
+  top: 50px;
+  left: 0;
+  border-radius: 50%;
+  animation: shadow 0.5s linear infinite;
+}
+.loader:after {
+  content: "";
+  width: 80%;
+  height: 80%;
+  background: #4e232a;
+  animation: bxSpin 0.5s linear infinite;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 4px;
+}
+@keyframes bxSpin {
+  17% {
+    border-bottom-right-radius: 3px;
+  }
+  25% {
+    transform: translateY(9px) rotate(22.5deg);
+  }
+  50% {
+    transform: translateY(18px) scale(1, 0.9) rotate(45deg);
+    border-bottom-right-radius: 40px;
+  }
+  75% {
+    transform: translateY(9px) rotate(67.5deg);
+  }
+  100% {
+    transform: translateY(0) rotate(90deg);
+  }
+}
+
+@keyframes shadow {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.2, 1);
+  }
 }

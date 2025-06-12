@@ -160,6 +160,7 @@ export const multiplePeoplePickerTemplate = (users: IPeoplePickerDetails[]) => {
 
 //PeoplePicker Template:
 export const peoplePickerTemplate = (user: IPeoplePickerDetails) => {
+  console.log("user", user);
   return (
     <>
       {user && (
@@ -309,8 +310,8 @@ export const getFileIcon = (name: string) => {
   }
 };
 
-//DownLoad File Function:
-export const downloadFile = (url) => {
+//View File Function:
+export const viewFiles = (url) => {
   const anchortag = document.createElement("a");
   anchortag.setAttribute("href", url);
   anchortag.setAttribute("target", "_blank");
@@ -318,7 +319,15 @@ export const downloadFile = (url) => {
   anchortag.click();
   anchortag.remove();
 };
-
+//DownLoad File Function:
+export const DownloadFiles = (url) => {
+  const anchortag = document.createElement("a");
+  anchortag.setAttribute("href", url);
+  anchortag.setAttribute("target", "_blank");
+  anchortag.setAttribute("download", ""); // for download file
+  anchortag.click();
+  anchortag.remove();
+};
 //RequestId generator
 export const generateRequestID = (tableData: IRequestDetails[]) => {
   const sortRec = tableData?.sort((a, b) => b.ID - a.ID);

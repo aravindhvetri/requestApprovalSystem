@@ -10,8 +10,11 @@ import { update } from "@microsoft/sp-lodash-subset";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Config } from "../../../../CommonServices/Config";
 import SPServices from "../../../../CommonServices/SPServices";
+import Loader from "../Loader";
 
 const ActionButtons = ({
+  showLoaderinForm,
+  setShowLoaderinForm,
   validRequiredField,
   formMode,
   setOpenRequestForm,
@@ -50,6 +53,7 @@ const ActionButtons = ({
   };
   //Update Status by approver
   const updateStatusByApprover = async (data, email, newStatusCode) => {
+    setShowLoaderinForm(true);
     var updateStage = null;
     var statusUpdate = data?.Status;
     const tempArr: IApprovalPatch = {
@@ -104,7 +108,7 @@ const ActionButtons = ({
         Currentstage: updateStage,
       })),
       status: statusUpdate,
-      comments: "",
+      comments: approvalPatch?.comments,
     };
     await setApprovalPatch({ ...tempArr });
     updateReqListbyApprover({ ...tempArr });
@@ -171,6 +175,7 @@ const ActionButtons = ({
   };
   return (
     <>
+      <Loader showLoader={showLoaderinForm} />
       {activeTab == `${Config.TabNames?.Approval}` && formMode?.edit && (
         <>
           <label className={styles.contentTitle}>Approver comments</label>
@@ -181,12 +186,13 @@ const ActionButtons = ({
               height: "60px",
               resize: "none",
             }}
-            onChange={(e) => {
-              console.log("comments check", e);
+            onChange={async (e) => {
+              const value = e.target.value;
               setApprovalPatch((prev) => ({
                 ...prev,
-                comments: "",
+                comments: value,
               }));
+              value.trim() && setApproverValidation("");
             }}
             value={approvalPatch?.comments}
             rows={5}
@@ -227,9 +233,7 @@ const ActionButtons = ({
             ></Button>
             <Button
               className={"rejectButton"}
-              onClick={() =>
-                updateStatusByApprover(currentRecord, loginUser, 2)
-              }
+              onClick={() => approverValidationCheck()}
               label="Reject"
             ></Button>
           </>

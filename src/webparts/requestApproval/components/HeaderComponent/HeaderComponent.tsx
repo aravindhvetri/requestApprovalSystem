@@ -14,7 +14,15 @@ import { Button } from "primereact/button";
 import { Config } from "../../../../CommonServices/Config";
 import { toastNotify } from "../../../../CommonServices/CommonTemplate";
 import { Toast } from "primereact/toast";
-import { IFormMode } from "../../../../CommonServices/interface";
+import {
+  IBasicDropdown,
+  IDropdownDetails,
+  IFilterSelected,
+  IFormMode,
+} from "../../../../CommonServices/interface";
+import { Dropdown } from "primereact/dropdown";
+import SPServices from "../../../../CommonServices/SPServices";
+import { InputText } from "primereact/inputtext";
 
 const HeaderComponent = ({ context }) => {
   //Current User Details:
@@ -28,7 +36,19 @@ const HeaderComponent = ({ context }) => {
   const [formMode, setFormMode] = useState<IFormMode>({
     ...Config.FormModeConfig,
   });
+  const [getChoicesColumn, setGetChoicesColumn] = useState<IDropdownDetails>({
+    ...Config.dropdownConfig,
+  });
+  const [filterSelected, setFilterSelected] = useState<IFilterSelected>({
+    ...Config.filterSelectedConfig,
+  });
   const toast = useRef(null);
+  useEffect(() => {
+    getChoices("RequestType");
+    getChoices("Department");
+    getChoices("Status");
+  }, []);
+  console.log("filterSelected", filterSelected);
   //Toast Notification
   const callToastNotify = (msg) => {
     toast.current?.show({
@@ -40,11 +60,47 @@ const HeaderComponent = ({ context }) => {
           ClsName: "toast-imgcontainer-success",
           type: "Success",
           msg: `Request ${msg} successfully`,
-          image: require("../../../../../src/webparts/requestApproval/assets/successGif.gif"),
+          image: require("../../../../../src/webparts/requestApproval/assets/check.gif"),
         }),
       life: 3000,
     });
   };
+  //On change handle
+  const onChangeHandle = (key: keyof IFilterSelected, value: string) => {
+    setFilterSelected((prev) => ({ ...prev, [key]: value }));
+  };
+  //Get Choices
+  const getChoices = async (columnName) => {
+    try {
+      const res: any = await SPServices.SPGetChoices({
+        Listname: Config.ListNames.RequestDetails,
+        FieldName: columnName,
+      });
+      let tempArrChoices: IBasicDropdown[] = [];
+      res?.Choices.forEach((element) => {
+        tempArrChoices.push({ name: element, id: null });
+      });
+      if (columnName === "RequestType") {
+        setGetChoicesColumn((prev) => ({
+          ...prev,
+          requestTypesChoice: [...tempArrChoices],
+        }));
+      } else if (columnName === "Department") {
+        setGetChoicesColumn((prev) => ({
+          ...prev,
+          deparmentsChoice: [...tempArrChoices],
+        }));
+      } else if (columnName === "Status") {
+        setGetChoicesColumn((prev) => ({
+          ...prev,
+          StatusChoices: [...tempArrChoices],
+        }));
+      }
+    } catch {
+      (err: any) => console.log("getChoices err", err);
+    }
+  };
+
   return (
     <>
       <Toast ref={toast} />
@@ -78,8 +134,62 @@ const HeaderComponent = ({ context }) => {
             My approval
           </Button>
         </div>
-        {activeTab == `${Config.TabNames?.Request}` ? (
-          <div className={HeaderStyles.headerFilters}>
+        <div className={HeaderStyles.headerFilters}>
+          <div className={HeaderStyles.filtersBar}>
+            <InputText
+              onChange={(e) =>
+                onChangeHandle("globalSearchValue", e.target.value)
+              }
+              value={filterSelected?.globalSearchValue}
+              placeholder="Search here"
+            />
+            <Dropdown
+              value={getChoicesColumn?.StatusChoices?.find(
+                (e) => e.name === filterSelected?.statusSelected
+              )}
+              onChange={(e) => onChangeHandle("statusSelected", e.value?.name)}
+              options={getChoicesColumn?.StatusChoices}
+              optionLabel="name"
+              placeholder="Status"
+              disabled={formMode?.view}
+              className="w-full md:w-14rem"
+            />
+            <Dropdown
+              value={getChoicesColumn?.requestTypesChoice?.find(
+                (e) => e.name === filterSelected?.requestSelected
+              )}
+              onChange={(e) => onChangeHandle("requestSelected", e.value?.name)}
+              options={getChoicesColumn?.requestTypesChoice}
+              optionLabel="name"
+              placeholder="Request Type"
+              disabled={formMode?.view}
+              className="w-full md:w-14rem"
+            />
+            <Dropdown
+              value={getChoicesColumn?.deparmentsChoice?.find(
+                (e) => e.name === filterSelected?.departmentSelected
+              )}
+              onChange={(e) =>
+                onChangeHandle("departmentSelected", e.value?.name)
+              }
+              options={getChoicesColumn?.deparmentsChoice}
+              optionLabel="name"
+              placeholder="Departments"
+              disabled={formMode?.view}
+              className="w-full md:w-14rem"
+            />
+            <div className="tooltip">
+              <img
+                onClick={() =>
+                  setFilterSelected({ ...Config.filterSelectedConfig })
+                }
+                style={{ cursor: "pointer", width: "20px", height: "20px" }}
+                src={require("../../assets/reset.png")}
+              ></img>
+              <span className="tooltiptext">Reset filters</span>
+            </div>
+          </div>
+          {activeTab == `${Config.TabNames?.Request}` ? (
             <Button
               onClick={() => {
                 setFormMode({ ...Config.FormModeConfig, add: true });
@@ -90,16 +200,19 @@ const HeaderComponent = ({ context }) => {
               }}
               label="Add request"
             />
-          </div>
-        ) : (
-          ""
-        )}
+          ) : (
+            ""
+          )}
+        </div>
       </div>
 
       <div>
         {activeTab == `${Config.TabNames?.Request}` ? (
           <>
             <RequestForm
+              filterSelected={filterSelected}
+              requestTypesChoice={getChoicesColumn?.requestTypesChoice}
+              deparmentsChoice={getChoicesColumn?.deparmentsChoice}
               context={context}
               openRequestForm={openRequestForm}
               activeTab={activeTab}
@@ -113,6 +226,7 @@ const HeaderComponent = ({ context }) => {
           <>
             {activeTab == `${Config.TabNames?.Approval}` ? (
               <MyApproval
+                filterSelected={filterSelected}
                 openRequestForm={openRequestForm}
                 setOpenRequestForm={setOpenRequestForm}
                 activeTab={activeTab}

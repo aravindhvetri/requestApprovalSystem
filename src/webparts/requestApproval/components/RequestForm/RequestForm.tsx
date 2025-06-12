@@ -38,26 +38,31 @@ import {
 } from "../../../../CommonServices/interface";
 import {
   deepClone,
-  downloadFile,
+  viewFiles,
   generateRequestID,
   getFileIcon,
   multiplePeoplePickerTemplate,
   peoplePickerTemplate,
   statusTemplate,
   toastNotify,
+  DownloadFiles,
 } from "../../../../CommonServices/CommonTemplate";
 import * as moment from "moment";
 import { sp, View } from "@pnp/sp/presets/all";
 import { Toast } from "primereact/toast";
 import ActionButtons from "../ActionButtons/ActionButtons";
+import Loader from "../Loader";
 
 const RequestForm = ({
   context,
   setOpenRequestForm,
+  filterSelected,
   openRequestForm,
   callToastNotify,
   formMode,
   activeTab,
+  deparmentsChoice,
+  requestTypesChoice,
   setFormMode,
 }) => {
   const loginUser = context._pageContext._user.email;
@@ -66,12 +71,6 @@ const RequestForm = ({
   const [requestDetailsDataTable, setRequestDetailsDataTable] = useState<
     IRequestDetails[]
   >([]);
-  const [requestTypesChoice, setRequestTypesChoice] = useState<
-    IBasicDropdown[]
-  >(Config.dropdownConfig.requestTypesChoice);
-  const [deparmentsChoice, setDepartmentChoices] = useState<IBasicDropdown[]>(
-    Config.dropdownConfig.deparmentsChoice
-  );
   const cloneRequestDetails: IPatchRequestDetails = deepClone(
     Config.requestDetailsConfig
   );
@@ -101,15 +100,18 @@ const RequestForm = ({
   const [delModal, setDelModal] = useState<IDelModal>({
     ...Config.initialdelModal,
   });
+  const [showLoader, setShowLoader] = useState<boolean>(false);
+  const [showLoaderinForm, setShowLoaderinForm] = useState<boolean>(false);
   //useref
   const clearFiles = useRef(null);
   const toast = useRef(null);
   //Initial Render:
   useEffect(() => {
+    if (requestDetailsDataTable.length === 0) {
+      setShowLoader(true);
+    }
     getRequestApprovalDetails();
-    getChoices("RequestType");
-    getChoices("Department");
-  }, []);
+  }, [filterSelected]);
   //States for Approval Json:
   useEffect(() => {
     if (openRequestForm?.RequestForm) {
@@ -124,7 +126,9 @@ const RequestForm = ({
         });
         LoadExistingFiles(updateItem?.ID);
       } else {
-        requestDetails["RequestID"] = generateRequestID(requestDetailsDataTable)
+        requestDetails["RequestID"] = generateRequestID(
+          requestDetailsDataTable
+        );
         setRequestDetails({ ...requestDetails });
       }
       setSelectedStage({
@@ -196,33 +200,43 @@ const RequestForm = ({
       });
   };
   //Filter Data
-  const filterCondition = (tempRequestDetails) => {
-    console.log("tempRequestDetails",tempRequestDetails)
+  const filterCondition = async (tempRequestDetails) => {
     const tempFilterValue: IRequestDetails[] = tempRequestDetails?.filter(
       (res) => res?.Author?.email === loginUser
     );
-    setRequestDetailsDataTable([...tempFilterValue]);
-  };
-
-  //Get Choices
-  const getChoices = async (columnName) => {
-    try {
-      const res: any = await SPServices.SPGetChoices({
-        Listname: Config.ListNames.RequestDetails,
-        FieldName: columnName,
-      });
-      let tempArrChoices: IBasicDropdown[] = [];
-      res?.Choices.forEach((element) => {
-        tempArrChoices.push({ name: element, id: null });
-      });
-      if (columnName === "RequestType") {
-        setRequestTypesChoice([...tempArrChoices]);
-      } else if (columnName === "Department") {
-        setDepartmentChoices([...tempArrChoices]);
-      }
-    } catch {
-      (err: any) => console.log("getChoices err", err);
-    }
+    const finalFilterData = tempFilterValue.filter(
+      (res) =>
+        (filterSelected?.requestSelected
+          ? filterSelected?.requestSelected === res?.RequestType
+          : true) &&
+        (filterSelected?.statusSelected
+          ? filterSelected?.statusSelected === res?.Status
+          : true) &&
+        (filterSelected?.departmentSelected
+          ? filterSelected?.departmentSelected === res?.Department
+          : true) &&
+        (filterSelected?.globalSearchValue
+          ? res?.RequestID.toLowerCase().includes(
+              filterSelected?.globalSearchValue.toLowerCase()
+            ) ||
+            res?.ApprovalJson[0]?.stages?.filter((e) =>
+              e?.approvers.some(
+                (approver) =>
+                  approver?.name
+                    .toLowerCase()
+                    .includes(
+                      filterSelected?.globalSearchValue.toLowerCase()
+                    ) ||
+                  approver?.email
+                    .toLowerCase()
+                    .includes(filterSelected?.globalSearchValue.toLowerCase())
+              )
+            ).length > 0
+          : true)
+    );
+    console.log("finalFilterData", finalFilterData);
+    await setRequestDetailsDataTable([...finalFilterData]);
+    setShowLoader(false);
   };
 
   //Get Attachments
@@ -275,6 +289,7 @@ const RequestForm = ({
       ...Config.DialogConfig,
       RequestForm: false,
     });
+    setShowLoaderinForm(false);
     callToastNotify("updated");
   };
   //Add Datas From Attachment Library Requestors:
@@ -394,6 +409,7 @@ const RequestForm = ({
         ...Config.DialogConfig,
         RequestForm: false,
       });
+      setShowLoaderinForm(false);
       callToastNotify("added");
     } catch {
       (err) => console.log("addFiles err", err);
@@ -640,7 +656,7 @@ const RequestForm = ({
           .filter((e) => e !== -1);
         if (tempSatgeErr.length > 0) {
           validation["stageErrIndex"] = [...tempSatgeErr];
-          validation["stageValidation"] = "People and type are required";
+          validation["stageValidation"] = "* People and type are required";
         } else if (tempSatgeErr.length === 0) {
           validation["stageErrIndex"] = [];
           validation["stageValidation"] = "";
@@ -660,6 +676,7 @@ const RequestForm = ({
       if (action === "addStage") {
         addStage();
       } else if (action === "submit") {
+        setShowLoaderinForm(true);
         updateItem?.ID ? updateRequestDetails() : addRequestDetails();
       }
     }
@@ -813,6 +830,7 @@ const RequestForm = ({
 
   return (
     <>
+      <Loader showLoader={showLoader} />
       <div>
         <DataTable
           paginator
@@ -976,8 +994,8 @@ const RequestForm = ({
                     className={`tooltip ${formStyles.label}`}
                     onClick={() =>
                       file?.ulr
-                        ? downloadFile(file?.ulr)
-                        : downloadFile(file?.objectURL)
+                        ? viewFiles(file?.ulr)
+                        : viewFiles(file?.objectURL)
                     }
                   >
                     {file?.name.length > 20
@@ -986,16 +1004,25 @@ const RequestForm = ({
                     <span className="tooltiptext">{file?.name}</span>
                   </Label>
                 </div>
-                {!formMode?.view &&
-                  (file?.objectURL || file?.author?.EMail === loginUser) && (
-                    <div className={formStyles.cancelIcon}>
+                <div className={formStyles.cancelIcon}>
+                  <img
+                    onClick={() =>
+                      file?.ulr
+                        ? DownloadFiles(file?.ulr)
+                        : DownloadFiles(file?.objectURL)
+                    }
+                    className={formStyles.cancelImg}
+                    src={require("../../assets/downloading.png")}
+                  />
+                  {!formMode?.view &&
+                    (file?.objectURL || file?.author?.EMail === loginUser) && (
                       <img
                         onClick={() => removeFile(file?.name)}
                         className={formStyles.cancelImg}
                         src={require("../../assets/close.png")}
                       />
-                    </div>
-                  )}
+                    )}
+                </div>
               </div>
             ))}
           </div>
@@ -1112,6 +1139,8 @@ const RequestForm = ({
             </div>
           </div>
           <ActionButtons
+            showLoaderinForm={showLoaderinForm}
+            setShowLoaderinForm={setShowLoaderinForm}
             setOpenRequestForm={setOpenRequestForm}
             validRequiredField={validRequiredField}
             formMode={formMode}
