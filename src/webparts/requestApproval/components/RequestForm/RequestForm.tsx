@@ -497,13 +497,17 @@ const RequestForm = ({
   const renderApprovers = (rowData: IRequestDetails) => {
     const approvers: IPeoplePickerDetails[] = rowData?.ApprovalJson?.flatMap(
       (approvalObj) =>
-        approvalObj?.stages?.flatMap((stage) =>
-          stage?.approvers?.map((approver) => ({
-            id: approver?.id,
-            name: approver?.name,
-            email: approver?.email,
-          }))
-        )
+        approvalObj?.stages
+          ?.filter((stage) => stage?.stage >= approvalObj?.Currentstage)
+          .flatMap((stage) =>
+            stage?.approvers
+              ?.filter((approver) => approver?.statusCode === 0)
+              ?.map((approver) => ({
+                id: approver?.id,
+                name: approver?.name,
+                email: approver?.email,
+              }))
+          )
     );
     return (
       <div>
@@ -530,9 +534,11 @@ const RequestForm = ({
     );
     return (
       <div>
-        {approvers.length > 1
-          ? multiplePeoplePickerTemplate(approvers)
-          : peoplePickerTemplate(approvers[0])}
+        {approvers.length > 0
+          ? approvers.length > 1
+            ? multiplePeoplePickerTemplate(approvers)
+            : peoplePickerTemplate(approvers[0])
+          : "-"}
       </div>
     );
   };
@@ -853,7 +859,9 @@ const RequestForm = ({
           <Column
             field="Approvers"
             header="Need to approved"
-            body={renderApprovers}
+            body={(rowdata) =>
+              rowdata?.Status !== "Approved" ? renderApprovers(rowdata) : "-"
+            }
           ></Column>
           <Column
             field="Approvers"
