@@ -110,7 +110,7 @@ const HeaderComponent = ({ context }) => {
             imageUrl={`/_layouts/15/userphoto.aspx?size=S&username=${currentUserEmail}`}
           />
           <div className={HeaderStyles.profileTitle}>
-            <h1>Good morning, {currentUserName}!</h1>
+            <h1>Welcome back, {currentUserName}!</h1>
             <label>Have a great day on your management</label>
           </div>
         </div>
