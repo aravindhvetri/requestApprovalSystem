@@ -179,13 +179,13 @@ const HeaderComponent = ({ context }) => {
               className="w-full md:w-14rem"
             />
             <div className="tooltip">
-              <img
+              <Button
+                style={{ width: "fit-content" }}
+                icon="pi pi-undo"
                 onClick={() =>
                   setFilterSelected({ ...Config.filterSelectedConfig })
                 }
-                style={{ cursor: "pointer", width: "20px", height: "20px" }}
-                src={require("../../assets/reset.png")}
-              ></img>
+              />
               <span className="tooltiptext">Reset filters</span>
             </div>
           </div>

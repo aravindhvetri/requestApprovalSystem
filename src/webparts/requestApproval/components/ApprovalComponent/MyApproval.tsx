@@ -60,11 +60,12 @@ const MyApproval = ({
   console.log("files", files);
   //Initial Render:
   useEffect(() => {
-    if (requestDetails.length === 0) {
-      setShowLoader(true);
-    }
     getRequestApprovalDetails();
   }, [filterSelected]);
+  useEffect(() => {
+    setShowLoader(true);
+    getRequestApprovalDetails();
+  }, []);
   useEffect(() => {
     if (openRequestForm?.ApprovalForm) {
       if (requestDetailsObj?.ID) {
