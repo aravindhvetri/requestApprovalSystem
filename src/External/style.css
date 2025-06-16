@@ -69,19 +69,21 @@ div[data-automationid="SiteHeader"] {
   padding: 8px;
   font-size: var(--fontSizeSmall);
   border-radius: 0 !important;
-  border: 1px solid var(--liteGreyBackground);
-  color: var(--black);
+  border: 1px solid var(--darkGrey);
+}
+.p-inputtext::placeholder {
+  color: var(--darkGrey) !important;
 }
 .p-inputtext:enabled:focus {
   box-shadow: none;
 }
 .p-inputtext:enabled:focus {
-  border-color: var(--darkGrey);
+  border-color: var(--themeColor);
 }
 
 /* Dropdown styles......................... */
 .p-dropdown {
-  border: 1px solid var(--liteGreyBackground);
+  border: 1px solid var(--darkGrey);
   border-radius: 0 !important;
   box-shadow: none;
   padding: 2px;
@@ -90,7 +92,7 @@ div[data-automationid="SiteHeader"] {
   height: 30px;
 }
 .p-dropdown:focus-within {
-  border-color: var(--darkGrey);
+  border-color: var(--themeColor);
 }
 .p-dropdown-items-wrapper {
   font-size: var(--fontSizeSmall);
@@ -137,7 +139,14 @@ div[data-automationid="SiteHeader"] {
   display: none;
 }
 .p-fileupload .p-fileupload-content {
-  border: 1px dashed var(--liteGreyBackground);
+  border: 1px solid transparent;
+  border-image: repeating-linear-gradient(
+    54deg,
+    var(--darkGrey) 0 10px,
+    transparent 10px 15px
+  );
+  border-image-slice: 1;
+  border-image-repeat: round;
   padding: 10px;
 }
 .p-fileupload .p-fileupload-content .p-button {
@@ -635,4 +644,11 @@ div[data-automationid="SiteHeader"] {
   50% {
     transform: scale(1.2, 1);
   }
+}
+/* People picker styles............... */
+.ms-BasePicker-text {
+  border: 1px solid var(--darkGrey) !important;
+}
+.ms-BasePicker-text:focus {
+  border: 1px solid var(--themeColor) !important;
 }

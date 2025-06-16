@@ -107,11 +107,12 @@ const RequestForm = ({
   const toast = useRef(null);
   //Initial Render:
   useEffect(() => {
-    if (requestDetailsDataTable.length === 0) {
-      setShowLoader(true);
-    }
     getRequestApprovalDetails();
   }, [filterSelected]);
+  useEffect(() => {
+    setShowLoader(true);
+    getRequestApprovalDetails();
+  }, []);
   //States for Approval Json:
   useEffect(() => {
     if (openRequestForm?.RequestForm) {
@@ -794,14 +795,12 @@ const RequestForm = ({
               onClick={() => setSelectedStage(stage)}
               className={formStyles.stageContainer}
             >
-              <div className={formStyles.stageIcon}>
-                {" "}
-                <img
-                  style={{ height: "25px", width: "25px" }}
-                  src={require("../../assets/teamwork.png")}
-                />
-              </div>
+              {/* <div className={formStyles.stageIcon}> </div> */}
               <div className={formStyles.stageDetails}>
+                <img
+                  style={{ marginRight: "5px", height: "15px", width: "15px" }}
+                  src={require("../../assets/approval.png")}
+                />
                 <h3 className={formStyles.stageTitle}>
                   {`Stage ${stage?.stage} approval`}
                 </h3>
