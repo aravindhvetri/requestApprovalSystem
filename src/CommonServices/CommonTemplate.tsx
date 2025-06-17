@@ -294,10 +294,25 @@ export const getFileIcon = (name: string) => {
         />
       );
     case "ppt":
+    case "pptx":
       return (
         <img
           style={{ width: "20px", height: "20px" }}
           src={require("../webparts/requestApproval/assets/pptIcon.png")}
+        />
+      );
+    case "csv":
+      return (
+        <img
+          style={{ width: "20px", height: "20px" }}
+          src={require("../webparts/requestApproval/assets/csvIcon.png")}
+        />
+      );
+    case "gif":
+      return (
+        <img
+          style={{ width: "20px", height: "20px" }}
+          src={require("../webparts/requestApproval/assets/gifIcon.png")}
         />
       );
     default:
