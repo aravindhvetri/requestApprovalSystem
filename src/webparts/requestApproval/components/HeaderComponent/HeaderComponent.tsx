@@ -180,7 +180,7 @@ const HeaderComponent = ({ context }) => {
             />
             <div className="tooltip">
               <Button
-                style={{ width: "fit-content" }}
+                style={{ width: "fit-content", padding: "6px" }}
                 icon="pi pi-undo"
                 onClick={() =>
                   setFilterSelected({ ...Config.filterSelectedConfig })

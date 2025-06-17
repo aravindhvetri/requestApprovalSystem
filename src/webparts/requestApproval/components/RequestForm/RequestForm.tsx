@@ -958,7 +958,13 @@ const RequestForm = ({
               url={"/api/upload"}
               multiple
               ref={clearFiles}
+              chooseOptions={{
+                icon: "pi pi-upload",
+                style: { padding: "5px 10px" },
+                className: "modernButton",
+              }}
               chooseLabel="Browse"
+              headerClassName="modernButton"
               onSelect={(e) => {
                 handleFileSelection(e, files, setFiles, toast, Config);
                 clearFiles.current.clear();
@@ -984,7 +990,7 @@ const RequestForm = ({
                   </div>
                   {formMode?.view
                     ? "No files found"
-                    : "Click or drag file to this area to upload"}
+                    : "Drag file to this area to upload"}
                 </p>
               }
             />
@@ -1044,6 +1050,7 @@ const RequestForm = ({
                 <div className="stageTable">{stagesDataTable()}</div>
                 <div className={`${formStyles.addStageButton}`}>
                   <Button
+                    className="modernButton"
                     style={{ width: "100%", display: "flow" }}
                     visible={formMode?.edit || formMode?.add}
                     label="Add Stage"
@@ -1066,8 +1073,9 @@ const RequestForm = ({
                       <Button
                         icon="pi pi-trash"
                         label="Remove"
+                        style={{ padding: "5px 10px" }}
                         visible={formMode?.edit || formMode?.add}
-                        className="closeButton"
+                        className="modernButton"
                         onClick={() => {
                           removeStage(
                             requestDetails?.ApprovalJson[0]?.stages.findIndex(

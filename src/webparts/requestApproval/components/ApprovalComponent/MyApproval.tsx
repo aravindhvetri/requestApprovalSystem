@@ -453,6 +453,11 @@ const MyApproval = ({
               <FileUpload
                 name="demo[]"
                 url={"/api/upload"}
+                chooseOptions={{
+                  icon: "pi pi-upload",
+                  style: { padding: "5px 10px" },
+                  className: "modernButton",
+                }}
                 multiple
                 ref={clearFiles}
                 chooseLabel="Browse"
@@ -483,7 +488,7 @@ const MyApproval = ({
                     </div>
                     {approvalFormMode?.view
                       ? "No files found"
-                      : "Click or drag file to this area to upload"}
+                      : "Drag file to this area to upload"}
                   </p>
                 }
               />
