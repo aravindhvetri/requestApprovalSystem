@@ -4,7 +4,6 @@ import * as React from "react";
 import "../../../External/style.css";
 
 const Loader = ({ showLoader }) => {
-  console.log("showLoader", showLoader);
   return showLoader ? (
     <div className="loader-container">
       <span className="loader"></span>

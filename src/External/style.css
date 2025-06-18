@@ -62,6 +62,10 @@ div[data-automationid="SiteHeader"] {
 .p-dialog .p-dialog-header {
   padding: 5px 20px;
 }
+/* Disable fields.........................  */
+.p-disabled {
+  background-color: #f6f6f6;
+}
 /* Input text styles........................ */
 .p-inputtext {
   width: 180px;

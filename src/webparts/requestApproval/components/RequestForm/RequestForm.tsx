@@ -46,6 +46,7 @@ import {
   statusTemplate,
   toastNotify,
   DownloadFiles,
+  getApprovalHistory,
 } from "../../../../CommonServices/CommonTemplate";
 import * as moment from "moment";
 import { sp, View } from "@pnp/sp/presets/all";
@@ -147,6 +148,7 @@ const RequestForm = ({
         approvalJson: [],
         comments: "",
       });
+      setValidation({ ...Config.ApprovalFlowValidation });
       getRequestApprovalDetails();
     }
   }, [openRequestForm?.RequestForm]);
@@ -235,7 +237,6 @@ const RequestForm = ({
             ).length > 0
           : true)
     );
-    console.log("finalFilterData", finalFilterData);
     await setRequestDetailsDataTable([...finalFilterData]);
     setShowLoader(false);
   };
@@ -548,7 +549,10 @@ const RequestForm = ({
   const renderActionColumn = (rowData: IRequestDetails) => {
     return (
       <div className="actionIcons">
-        {rowData?.Status === "Rejected" && (
+        {(rowData?.Status === "Rejected" ||
+          rowData?.ApprovalJson[0]?.stages?.flatMap((stage) =>
+            stage?.approvers?.filter((approver) => approver?.statusCode === 1)
+          ).length === 0) && (
           <div>
             <i
               className="EditIcon pi pi-pencil"
@@ -587,52 +591,18 @@ const RequestForm = ({
         </div>
         <div>
           <i
-            onClick={() => getApprovalHistory(rowData?.ID)}
+            onClick={() =>
+              getApprovalHistory(
+                rowData?.ID,
+                setGetApprovalHistoryDetails,
+                setOpenRequestForm
+              )
+            }
             className="HistoryIcon pi pi-history"
           ></i>
         </div>
       </div>
     );
-  };
-
-  //Get Approval History:
-  const getApprovalHistory = (clickingID: number) => {
-    SPServices.SPReadItems({
-      Listname: Config.ListNames?.ApprovalHistory,
-      Orderby: "Modified",
-      Orderbydecorasc: false,
-      Select:
-        "*,RequestID/ID,RequestID/RequestID,Approver/ID,Approver/Title,Approver/EMail",
-      Expand: "RequestID,Approver",
-    })
-      .then((response: any) => {
-        const approvalHistory = response.filter(
-          (item: any) => item.RequestID.ID === clickingID
-        );
-        const tempApprovalHistory: IApprovalHistory[] = [];
-        approvalHistory.forEach((item) => {
-          tempApprovalHistory.push({
-            ID: item?.ID,
-            RequestID: item?.RequestID?.RequestID,
-            Approver: {
-              id: item?.Approver?.ID,
-              name: item?.Approver?.Title,
-              email: item?.Approver?.EMail,
-            },
-            Status: item?.Status,
-            Comments: item?.Comments,
-            Date: moment(item?.Created).format("DD-MM-YYYY"),
-          });
-        });
-        setGetApprovalHistoryDetails([...tempApprovalHistory]);
-        setOpenRequestForm({
-          ...Config.DialogConfig,
-          ApprovalHistory: true,
-        });
-      })
-      .catch((err) => {
-        console.log("Error fetching approval history:", err);
-      });
   };
 
   //Render Rejection Name:
@@ -1041,7 +1011,7 @@ const RequestForm = ({
           </div>
 
           <div className={formStyles.appproversHeader}>
-            <label className={formStyles.contentTitle}>Approvers</label>
+            <label className={formStyles.contentTitle}>APPROVERS</label>
           </div>
           <div className={`${formStyles.approvalConfigContainer}`}>
             <div className={`${formStyles.approvalSubContainer}`}>
@@ -1095,7 +1065,9 @@ const RequestForm = ({
                       personSelectionLimit={3}
                       groupName={""}
                       showtooltip={true}
-                      tooltipMessage="Search and select persons here"
+                      tooltipMessage={
+                        !formMode?.view ? "Search and select persons here" : ""
+                      }
                       disabled={formMode?.view}
                       ensureUser={true}
                       defaultSelectedUsers={requestDetails?.ApprovalJson[0]?.stages[

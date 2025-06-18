@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import SPServices from "../../../../CommonServices/SPServices";
 import { Config } from "../../../../CommonServices/Config";
 import {
+  IApprovalHistory,
   IPeoplePickerDetails,
   IRequestDetails,
 } from "../../../../CommonServices/interface";
@@ -15,6 +16,7 @@ import {
   statusTemplate,
   toastNotify,
   DownloadFiles,
+  getApprovalHistory,
 } from "../../../../CommonServices/CommonTemplate";
 //PrimeReact Imports:
 import { DataTable } from "primereact/datatable";
@@ -55,9 +57,11 @@ const MyApproval = ({
   const [alreadyExistingFiles, setAlreadyExistingFiles] = useState([]);
   const [showLoader, setShowLoader] = useState<boolean>(false);
   const [showLoaderinForm, setShowLoaderinForm] = useState<boolean>(false);
+  const [getApprovalHistoryDetails, setGetApprovalHistoryDetails] = useState<
+    IApprovalHistory[]
+  >([]);
   const toast = useRef(null);
   const clearFiles = useRef(null);
-  console.log("files", files);
   //Initial Render:
   useEffect(() => {
     getRequestApprovalDetails();
@@ -173,12 +177,12 @@ const MyApproval = ({
     setRequestDetailsObj({
       ID: rowData?.ID,
       RequestID: rowData?.RequestID,
-      RequestType: rowData?.RequestType,
-      Department: rowData?.Department,
-      Status: rowData?.Status,
+      RequestType: rowData?.RequestType || "",
+      Department: rowData?.Department || "",
+      Status: rowData?.Status || "",
       Created: rowData?.Created,
-      Amount: rowData?.Amount,
-      Description: rowData?.Description,
+      Amount: rowData?.Amount || 0,
+      Description: rowData?.Description || "",
       ApprovalJson: rowData?.ApprovalJson,
       Author: rowData?.Author,
       IsDelete: false,
@@ -197,6 +201,11 @@ const MyApproval = ({
                 className="EditIcon pi pi-pencil"
                 onClick={async () => {
                   await currentData(rowData);
+                  await getApprovalHistory(
+                    rowData?.ID,
+                    setGetApprovalHistoryDetails,
+                    ""
+                  );
                   setApprovalFormMode({ edit: true, view: false });
                   setOpenRequestForm({
                     ...Config.DialogConfig,
@@ -211,6 +220,11 @@ const MyApproval = ({
             className="ViewIcon pi pi-eye"
             onClick={async () => {
               await currentData(rowData);
+              await getApprovalHistory(
+                rowData?.ID,
+                setGetApprovalHistoryDetails,
+                ""
+              );
               setApprovalFormMode({ edit: false, view: true });
               setOpenRequestForm({
                 ...Config.DialogConfig,
@@ -296,7 +310,6 @@ const MyApproval = ({
       .then((res: any) => {
         let tempData = [];
         if (res?.length) {
-          console.log("fileshjgh", res);
           res?.forEach((val: any) => {
             tempData.push({
               id: val?.ID,
@@ -412,7 +425,7 @@ const MyApproval = ({
           ></Column>
         </DataTable>
         <Dialog
-          header="Update request"
+          header={approvalFormMode?.edit ? "Update request" : "View request"}
           visible={openRequestForm?.ApprovalForm}
           style={{ width: "50vw" }}
           onHide={() => {
@@ -446,8 +459,39 @@ const MyApproval = ({
                 >{`Amount - ${requestDetailsObj?.Amount}`}</Label>
               </div>
             </div>
+            <Label
+              style={{ marginBottom: "10px" }}
+              className={MyApprovalStyles.contentTitle}
+            >
+              APPROVAL HISTORY
+            </Label>
+            <DataTable
+              paginator
+              rows={2}
+              value={getApprovalHistoryDetails}
+              tableStyle={{ minWidth: "40rem" }}
+              emptyMessage={
+                <>
+                  <p style={{ textAlign: "center" }}>No Records Found</p>
+                </>
+              }
+            >
+              <Column field="RequestID" header="Request id"></Column>
+              <Column
+                field="Approvers"
+                header="Approver Name"
+                body={(rowData) => peoplePickerTemplate(rowData?.Approver)}
+              ></Column>
+              <Column field="Date" header="Date"></Column>
+              <Column
+                field="Status"
+                header="Status"
+                body={renderStatusColumn}
+              ></Column>
+              <Column field="Comments" header="Comments"></Column>
+            </DataTable>
             {(approvalFormMode?.edit || files.length > 0) && (
-              <Label className={MyApprovalStyles.contentTitle}>Documents</Label>
+              <Label className={MyApprovalStyles.contentTitle}>DOCUMENTS</Label>
             )}
             {approvalFormMode?.edit && (
               <FileUpload

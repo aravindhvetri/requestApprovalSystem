@@ -48,7 +48,6 @@ const HeaderComponent = ({ context }) => {
     getChoices("Department");
     getChoices("Status");
   }, []);
-  console.log("filterSelected", filterSelected);
   //Toast Notification
   const callToastNotify = (msg) => {
     toast.current?.show({
