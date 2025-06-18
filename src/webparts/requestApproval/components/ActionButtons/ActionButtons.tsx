@@ -27,14 +27,11 @@ const ActionButtons = ({
 }) => {
   const loginUser = context._pageContext._user.email;
   const [approvalPatch, setApprovalPatch] = useState<IApprovalPatch>({
-    status: currentRecord?.Status,
+    status: "",
     approvalJson: currentRecord?.ApprovalJson,
     comments: "",
   });
   const [approverValidation, setApproverValidation] = useState("");
-  console.log("approvalPatch", approvalPatch);
-  console.log("currentRecord", currentRecord);
-
   // UseEffect
   //Call Update function
   useEffect(() => {
@@ -110,27 +107,26 @@ const ActionButtons = ({
       status: statusUpdate,
       comments: approvalPatch?.comments,
     };
-    await setApprovalPatch({ ...tempArr });
-    updateReqListbyApprover({ ...tempArr });
+    updateReqListbyApprover({ ...tempArr }, newStatusCode);
   };
   //Update RequestDetails list by approver
-  const updateReqListbyApprover = async (approvalPatchDetails) => {
+  const updateReqListbyApprover = async (PatchDetails, newStatusCode) => {
     try {
       const res = await SPServices.SPUpdateItem({
         Listname: Config.ListNames.RequestDetails,
         ID: currentRecord?.ID,
         RequestJSON: {
-          Status: approvalPatchDetails?.status,
-          ApprovalJson: JSON.stringify(approvalPatchDetails?.approvalJson),
+          Status: PatchDetails?.status,
+          ApprovalJson: JSON.stringify(PatchDetails?.approvalJson),
         },
       });
-      addApprovalHistory(approvalPatchDetails);
+      addApprovalHistory(newStatusCode);
     } catch {
       (err) => console.log("updateReqListbyApprover err", err);
     }
   };
   //Add Approval History
-  const addApprovalHistory = async (approvalPatchDetails) => {
+  const addApprovalHistory = async (newStatusCode) => {
     const user: any = await SPServices.getCurrentUsers();
     try {
       const res = await SPServices.SPAddItem({
@@ -138,8 +134,8 @@ const ActionButtons = ({
         RequestJSON: {
           RequestIDId: currentRecord?.ID,
           ApproverId: user?.Id,
-          Status: approvalPatchDetails?.status,
-          Comments: approvalPatchDetails?.comments,
+          Status: newStatusCode === 1 ? "Approved" : "Rejected",
+          Comments: approvalPatch?.comments,
         },
       });
       updateFilesbyApprovalForm();
@@ -152,7 +148,7 @@ const ActionButtons = ({
   const updateStatusByUser = async (data, email, newStatusCode) => {
     //Update status and ApprovalJson
     const tempArr: IApprovalPatch = {
-      status: "Resubmited",
+      status: data?.Status === "Rejected" ? "Resubmited" : data?.Status,
       approvalJson: data?.ApprovalJson.map((approvalFlow) => ({
         ...approvalFlow,
         Currentstage: 1,
@@ -178,7 +174,7 @@ const ActionButtons = ({
       <Loader showLoader={showLoaderinForm} />
       {activeTab == `${Config.TabNames?.Approval}` && formMode?.edit && (
         <>
-          <label className={styles.contentTitle}>Approver comments</label>
+          <label className={styles.contentTitle}>APPROVER COMMENTS</label>
           <InputTextarea
             style={{
               width: "100%",
@@ -219,7 +215,11 @@ const ActionButtons = ({
                 ? updateStatusByUser(currentRecord, loginUser, 0)
                 : validRequiredField("submit")
             }
-            label={formMode?.edit ? "Re-Submit" : "Submit"}
+            label={
+              formMode?.edit && currentRecord?.Status === "Rejected"
+                ? "Re-Submit"
+                : "Submit"
+            }
           />
         )}
         {activeTab == `${Config.TabNames?.Approval}` && formMode?.edit && (

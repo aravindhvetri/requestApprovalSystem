@@ -4,6 +4,7 @@ import * as React from "react";
 import CommonStyles from "../External/commonStyle.module.scss";
 //Common Service Imports:
 import {
+  IApprovalHistory,
   IPatchRequestDetails,
   IPeoplePickerDetails,
   IRequestDetails,
@@ -19,6 +20,9 @@ import {
   TooltipDelay,
   TooltipHost,
 } from "@fluentui/react";
+import SPServices from "./SPServices";
+import { Config } from "./Config";
+import * as moment from "moment";
 
 //Status Common Template Styeles:
 export const statusTemplate = (status: string) => {
@@ -160,7 +164,6 @@ export const multiplePeoplePickerTemplate = (users: IPeoplePickerDetails[]) => {
 
 //PeoplePicker Template:
 export const peoplePickerTemplate = (user: IPeoplePickerDetails) => {
-  console.log("user", user);
   return (
     <>
       {user && (
@@ -353,4 +356,50 @@ export const generateRequestID = (tableData: IRequestDetails[]) => {
   } else {
     return "R-0001";
   }
+};
+
+//Get Approval History:
+export const getApprovalHistory = (
+  clickingID: number,
+  setGetApprovalHistoryDetails,
+  setOpenRequestForm
+) => {
+  SPServices.SPReadItems({
+    Listname: Config.ListNames?.ApprovalHistory,
+    Orderby: "Modified",
+    Orderbydecorasc: false,
+    Select:
+      "*,RequestID/ID,RequestID/RequestID,Approver/ID,Approver/Title,Approver/EMail",
+    Expand: "RequestID,Approver",
+  })
+    .then((response: any) => {
+      const approvalHistory = response.filter(
+        (item: any) => item.RequestID.ID === clickingID
+      );
+      const tempApprovalHistory: IApprovalHistory[] = [];
+      approvalHistory.forEach((item) => {
+        tempApprovalHistory.push({
+          ID: item?.ID,
+          RequestID: item?.RequestID?.RequestID,
+          Approver: {
+            id: item?.Approver?.ID,
+            name: item?.Approver?.Title,
+            email: item?.Approver?.EMail,
+          },
+          Status: item?.Status,
+          Comments: item?.Comments,
+          Date: moment(item?.Created).format("DD-MM-YYYY"),
+        });
+      });
+      setGetApprovalHistoryDetails([...tempApprovalHistory]);
+      if (setOpenRequestForm) {
+        setOpenRequestForm({
+          ...Config.DialogConfig,
+          ApprovalHistory: true,
+        });
+      }
+    })
+    .catch((err) => {
+      console.log("Error fetching approval history:", err);
+    });
 };
