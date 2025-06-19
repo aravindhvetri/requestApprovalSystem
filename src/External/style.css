@@ -22,13 +22,15 @@ div[data-automationid="SiteHeader"] {
 }
 .content_3f3fd3c2,
 .CanvasZone {
-  padding: 0 !important;
+  padding: 10px !important;
   max-width: 100% !important;
+}
+.l_b_d71df89c {
+  overflow: auto !important;
 }
 .ControlZone {
   margin: 0px;
-  padding: 10px;
-  overflow: auto;
+  padding: 0px;
 }
 .spAppAndPropertyPanelContainer {
   padding: 0px;
