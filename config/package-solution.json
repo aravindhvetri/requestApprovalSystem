@@ -3,7 +3,7 @@
   "solution": {
     "name": "request-approval-system-client-side-solution",
     "id": "f83762fc-cdde-4d43-a2ca-471307aa8b93",
-    "version": "1.0.0.1",
+    "version": "1.0.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
