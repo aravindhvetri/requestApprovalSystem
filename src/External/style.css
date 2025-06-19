@@ -27,7 +27,8 @@ div[data-automationid="SiteHeader"] {
 }
 .ControlZone {
   margin: 0px;
-  padding: 0px;
+  padding: 10px;
+  overflow: auto;
 }
 .spAppAndPropertyPanelContainer {
   padding: 0px;
