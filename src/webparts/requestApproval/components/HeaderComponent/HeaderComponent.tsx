@@ -12,10 +12,7 @@ import MyApproval from "../ApprovalComponent/MyApproval";
 import { Button } from "primereact/button";
 //Common Services Imports:
 import { Config } from "../../../../CommonServices/Config";
-import {
-  getSpGroupMembers,
-  toastNotify,
-} from "../../../../CommonServices/CommonTemplate";
+import { toastNotify } from "../../../../CommonServices/CommonTemplate";
 import { Toast } from "primereact/toast";
 import {
   IBasicDropdown,
@@ -45,21 +42,11 @@ const HeaderComponent = ({ context }) => {
   const [filterSelected, setFilterSelected] = useState<IFilterSelected>({
     ...Config.filterSelectedConfig,
   });
-  const [isApprover, setIsApprover] = useState<boolean>(false);
   const toast = useRef(null);
   useEffect(() => {
     getChoices("RequestType");
     getChoices("Department");
     getChoices("Status");
-    getSpGroupMembers(Config.SpGroupNames.RequestApprovers).then(
-      async (res) => {
-        if (res?.some((e) => e?.email === currentUserEmail)) {
-          await setIsApprover(true);
-        } else {
-          false;
-        }
-      }
-    );
   }, []);
   //Toast Notification
   const callToastNotify = (msg) => {
@@ -135,18 +122,16 @@ const HeaderComponent = ({ context }) => {
           >
             My request
           </Button>
-          {isApprover && (
-            <Button
-              className={
-                activeTab === `${Config.TabNames?.Approval}`
-                  ? "tab active"
-                  : "tab"
-              }
-              onClick={() => setActiveTab(`${Config.TabNames?.Approval}`)}
-            >
-              My approval
-            </Button>
-          )}
+          <Button
+            className={
+              activeTab === `${Config.TabNames?.Approval}`
+                ? "tab active"
+                : "tab"
+            }
+            onClick={() => setActiveTab(`${Config.TabNames?.Approval}`)}
+          >
+            My approval
+          </Button>
         </div>
         <div className={HeaderStyles.headerFilters}>
           <div className={HeaderStyles.filtersBar}>
