@@ -13,6 +13,7 @@ import {
   IFormMode,
   IDelModal,
   IFilterSelected,
+  ISpGroupNames,
 } from "./interface";
 
 export namespace Config {
@@ -23,6 +24,10 @@ export namespace Config {
   };
   export const libraryNamesConfig: ILibraryNames = {
     RequestAttachments: "RequestAttachments",
+  };
+  //Sp Group Names
+  export const SpGroupNames: ISpGroupNames = {
+    RequestApprovers: "RequestApprovers",
   };
   //Dropdown config
   export const dropdownConfig: IDropdownDetails = {

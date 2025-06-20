@@ -146,15 +146,9 @@ div[data-automationid="SiteHeader"] {
   display: none;
 }
 .p-fileupload .p-fileupload-content {
-  border: 1px solid transparent;
-  border-image: repeating-linear-gradient(
-    54deg,
-    var(--darkGrey) 0 10px,
-    transparent 10px 13px
-  );
-  border-image-slice: 1;
-  border-image-repeat: round;
+  border: 2px dashed var(--darkGrey);
   padding: 10px;
+  border-radius: 0;
 }
 .p-fileupload .p-fileupload-content .p-button {
   background-color: transparent;
@@ -294,7 +288,9 @@ div[data-automationid="SiteHeader"] {
 .p-paginator .p-paginator-last:not(.p-disabled):not(.p-highlight):hover {
   background-color: transparent;
 }
-
+.p-paginator .p-disabled {
+  background-color: transparent;
+}
 /* Custom styles for the Tob Tabes when it is disabled................... */
 .tab-container {
   display: flex;

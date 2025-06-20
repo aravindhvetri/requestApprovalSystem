@@ -68,6 +68,10 @@ export interface IListNames {
   RequestDetails: string;
   ApprovalHistory: string;
 }
+//Sp group name
+export interface ISpGroupNames {
+  RequestApprovers: string;
+}
 //Library names
 export interface ILibraryNames {
   RequestAttachments: string;
