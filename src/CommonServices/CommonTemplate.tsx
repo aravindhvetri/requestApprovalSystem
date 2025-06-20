@@ -23,6 +23,7 @@ import {
 import SPServices from "./SPServices";
 import { Config } from "./Config";
 import * as moment from "moment";
+import { sp } from "@pnp/sp/presets/all";
 
 //Status Common Template Styeles:
 export const statusTemplate = (status: string) => {
@@ -402,4 +403,22 @@ export const getApprovalHistory = (
     .catch((err) => {
       console.log("Error fetching approval history:", err);
     });
+};
+
+//Get SP Group Members
+export const getSpGroupMembers = async (groupName) => {
+  try {
+    const res = await sp.web.siteGroups.getByName(groupName).users.get();
+    const groupMembers: IPeoplePickerDetails[] = [];
+    res?.forEach((user) => {
+      groupMembers.push({
+        id: user?.Id,
+        name: user?.Title,
+        email: user?.Email,
+      });
+    });
+    return groupMembers;
+  } catch {
+    (err) => console.log("getSpGroupMembers err", err);
+  }
 };
